@@ -19,7 +19,6 @@ def send_message(message):
     client.send(msg)
     print(client.recv(128).decode(FORMAT))
     
-
-send_message("Hello Matthew Foster \n You Sock!")
+input = str(input())
+send_message(input)
 send_message(DISCONNECT)
-    
