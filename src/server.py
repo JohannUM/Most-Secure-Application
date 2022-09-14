@@ -1,5 +1,6 @@
 import socket
 import threading
+import json
 
 PORT = 5050
 SERVER = socket.gethostbyname(socket.gethostname())
@@ -11,6 +12,33 @@ DISCONNECT = "Sock It"
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
 
+current_connection_details = {}
+
+def handle_actions(actions):
+    pass
+
+def handle_json(msg, conn):
+    data = json.loads(msg)
+    id = data["id"]
+    password = data["password"]
+    actions = data["actions"]["steps"]
+    delay = data["actions"]["delay"]
+    print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
+    if id not in current_connection_details:
+        current_connection_details[id] = {"password":password}
+        handle_actions()
+    else:
+        conn.send(f"Enter password for {id}: ".encode(FORMAT))
+        pLength = conn.recv(HEADER).decode(FORMAT)
+        pSent = ""
+        if pLength:
+            pLength = int(pLength)
+            pSent = conn.recv(pLength).decode(FORMAT)
+        if current_connection_details[id]["password"] == pSent:
+            current_connection_details[id] = {"password":password}
+            handle_actions() # Password correct confirmation message.
+        else:
+            pass #return message about wrong password
 
 def handle_client(conn, addr):
     print(f"New Connection {addr}")
@@ -21,7 +49,8 @@ def handle_client(conn, addr):
             message = conn.recv(message_length).decode(FORMAT)
             if message == DISCONNECT:
                 break
-            print(f"{addr}: {message}")
+            #print(f"{addr}: {message}")
+            handle_json(message, conn)
             conn.send("Message received".encode(FORMAT))
     conn.close()
 
