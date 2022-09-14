@@ -11,6 +11,7 @@ DISCONNECT = "Sock It"
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
 
+
 def handle_client(conn, addr):
     print(f"New Connection {addr}")
     while True:
@@ -24,13 +25,14 @@ def handle_client(conn, addr):
             conn.send("Message received".encode(FORMAT))
     conn.close()
 
+
 def start_server():
     server.listen()
+    print(f"Server [{SERVER}:{PORT}] started.")
     while True:
         conn, addr = server.accept()
         thread = threading.Thread(target=handle_client, args=(conn, addr))
         thread.start()
 
 
-print("Server is starting...")
 start_server()
