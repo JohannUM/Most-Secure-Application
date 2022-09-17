@@ -1,47 +1,44 @@
-import json
+from required import messageFormating as mf
 import socket
-import sys
+import json
 
 PORT = 5050
 SERVER = "192.168.0.100"
 ADDR = (SERVER, PORT)
-HEADER = 64
-FORMAT = 'utf-8'
 DISCONNECT = "Sock It"
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(ADDR)
 
 def send_message(message):
-    msg = message.encode(FORMAT)
-    msg_length = str(len(msg)).encode(FORMAT)
-    msg_length += b" " * (HEADER - len(msg_length))
-    client.send(msg_length)
-    client.send(msg)
-    print(client.recv(16).decode(FORMAT))
-    password = input(client.recv(28).decode(FORMAT))
-    pSend = password.encode(FORMAT)
-    pLength = str(len(pSend)).encode(FORMAT)
-    pLength += b" " * (HEADER - len(pLength))
-    client.send(pLength)
-    client.send(pSend)
-    
-id = input("Enter your ID: ")
-password = input("Enter your password: ")
-actions = []
-print("Enter your actions (Q to end): ")
+    mf.encode_message(message, client)
+    print(mf.decode_message(client))
+
 while True:
-    action = input()
-    if action == "Q":
+    choice = int(input("Would you like to input json format or create json format step by step? (1/2, 0 to quit): "))
+    if choice == 0:
         break
-    actions.append(action)
-delay = int(input("Enter the dealy between actions: "))
-
-data = {"id":id, "password":password, "server":{"ip":SERVER, "port":PORT}, "actions":{"delay":delay, "steps":actions}}
-json_data = json.dumps(data)
-
-send_message(json_data)
-send_message(DISCONNECT)
-#input = str(input())
-#send_message(input)
-#send_message(DISCONNECT)
+    elif choice == 1:
+        while True:
+            jsonString = input("Enter json formatted string, press q to quit: ")
+            if jsonString == "q":
+                send_message(DISCONNECT)
+                break
+            else:
+                send_message(jsonString)
+    elif choice == 2:
+        id = input("Enter your ID: ")
+        password = input("Enter your password: ")
+        actions = []
+        print("Enter your actions (q to quit): ")
+        while True:
+            action = input()
+            if action == "q":
+                break
+            actions.append(action)
+        delay = int(input("Enter the dealy between actions: "))
+        data = {"id":id, "password":password, "server":{"ip":SERVER, "port":PORT}, "actions":{"delay":delay, "steps":actions}}
+        json_data = json.dumps(data)
+        send_message(json_data)
+    else:
+        print(f"{choice}, is not either 1/2, try again or press 0 to quit: ")

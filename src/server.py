@@ -1,3 +1,4 @@
+from required import messageFormating as mf
 import socket
 import threading
 import json
@@ -12,6 +13,8 @@ DISCONNECT = "Sock It"
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
 
+
+"""
 current_connection_details = {}
 
 def handle_actions(actions):
@@ -39,19 +42,19 @@ def handle_json(msg, conn):
             handle_actions() # Password correct confirmation message.
         else:
             pass #return message about wrong password
+"""
 
 def handle_client(conn, addr):
     print(f"New Connection {addr}")
     while True:
-        message_length = conn.recv(HEADER).decode(FORMAT)
-        if message_length:
-            message_length = int(message_length)
-            message = conn.recv(message_length).decode(FORMAT)
-            if message == DISCONNECT:
-                break
-            #print(f"{addr}: {message}")
-            handle_json(message, conn)
-            conn.send("Message received".encode(FORMAT))
+        message = mf.decode_message(conn)
+        if message == DISCONNECT:
+            break
+        elif message != "":
+            print(f"{addr}: {message}")
+            #handle_json(message, conn)
+            mf.encode_message("Message Received!", conn)
+    print(f"Connection closed {addr}")
     conn.close()
 
 
