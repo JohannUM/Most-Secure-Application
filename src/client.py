@@ -3,7 +3,7 @@ import socket
 import sys
 
 PORT = 5050
-SERVER = socket.gethostbyname(socket.gethostname())
+SERVER = "192.168.0.100"
 ADDR = (SERVER, PORT)
 HEADER = 64
 FORMAT = 'utf-8'
@@ -18,7 +18,13 @@ def send_message(message):
     msg_length += b" " * (HEADER - len(msg_length))
     client.send(msg_length)
     client.send(msg)
-    print(client.recv(128).decode(FORMAT))
+    print(client.recv(16).decode(FORMAT))
+    password = input(client.recv(28).decode(FORMAT))
+    pSend = password.encode(FORMAT)
+    pLength = str(len(pSend)).encode(FORMAT)
+    pLength += b" " * (HEADER - len(pLength))
+    client.send(pLength)
+    client.send(pSend)
     
 id = input("Enter your ID: ")
 password = input("Enter your password: ")
