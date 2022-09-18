@@ -3,13 +3,15 @@ import socket
 import json
 
 PORT = 5050
-SERVER = "192.168.0.100"
+SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
 DISCONNECT = "Sock It"
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(ADDR)
 
+
+# sends a message to the server
 def send_message(message):
     mf.encode_message(message, client)
     print(mf.decode_message(client))
