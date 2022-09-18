@@ -3,7 +3,7 @@ import socket
 import sys
 
 PORT = 5050
-SERVER = "192.168.0.100"
+SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
 HEADER = 64
 FORMAT = 'utf-8'
