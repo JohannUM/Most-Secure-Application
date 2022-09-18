@@ -12,7 +12,7 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
 
 
-"""
+
 current_connection_details = {}
 
 def handle_actions(actions):
@@ -25,6 +25,7 @@ def handle_json(msg, conn):
     actions = data["actions"]["steps"]
     delay = data["actions"]["delay"]
     print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
+    """ TODO fix and test properly
     if id not in current_connection_details:
         current_connection_details[id] = {"password":password}
         handle_actions()
@@ -40,7 +41,7 @@ def handle_json(msg, conn):
             handle_actions() # Password correct confirmation message.
         else:
             pass #return message about wrong password
-"""
+    """
 
 def handle_client(conn, addr):
     print(f"New Connection {addr}")
@@ -49,8 +50,8 @@ def handle_client(conn, addr):
         if message == DISCONNECT:
             break
         elif message != "":
-            print(f"{addr}: {message}")
-            #handle_json(message, conn)
+            #print(f"{addr}: {message}")
+            handle_json(message, conn)
             mf.encode_message("Message Received!", conn)
     print(f"Connection closed {addr}")
     conn.close()
