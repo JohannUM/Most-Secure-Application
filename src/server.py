@@ -26,7 +26,7 @@ def handle_json(msg, conn):
     print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
     if id not in current_connection_details:
         current_connection_details[id] = {"password":password}
-        handle_actions()
+        handle_actions(actions)
     else:
         conn.send(f"Enter password for {id}: ".encode(FORMAT))
         pLength = conn.recv(HEADER).decode(FORMAT)
@@ -36,7 +36,7 @@ def handle_json(msg, conn):
             pSent = conn.recv(pLength).decode(FORMAT)
         if current_connection_details[id]["password"] == pSent:
             current_connection_details[id] = {"password":password}
-            handle_actions() # Password correct confirmation message.
+            handle_actions(actions) # Password correct confirmation message.
         else:
             pass #return message about wrong password
 
