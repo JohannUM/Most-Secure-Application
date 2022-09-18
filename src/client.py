@@ -1,12 +1,10 @@
-import json
+from required import messageFormating as mf
 import socket
-import sys
+import json
 
 PORT = 5050
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
-HEADER = 64
-FORMAT = 'utf-8'
 DISCONNECT = "Sock It"
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -15,23 +13,18 @@ client.connect(ADDR)
 
 # sends a message to the server
 def send_message(message):
-    msg = message.encode(FORMAT)
-    msg_length = str(len(msg)).encode(FORMAT)
-    msg_length += b" " * (HEADER - len(msg_length))
-    client.send(msg_length)
-    client.send(msg)
-    print(client.recv(128).decode(FORMAT))
-
+    mf.encode_message(message, client)
+    print(mf.decode_message(client))
 
 # collects input that client enters by hand
 def collect_client_input():
     id = input("Enter your ID: ")
     password = input("Enter your password: ")
     actions = []
-    print("Enter your actions (Q to end): ")
+    print("Enter your actions (q to quit): ")
     while True:
         action = input()
-        if action == "Q":
+        if action == "q":
             break
         actions.append(action)
     delay = int(input("Enter the dealy between actions: "))
@@ -47,15 +40,16 @@ def collect_client_file():
     file.close()
     return json.dumps(data)
     
-
-input_choice = input("How would you like to input your data?\n [1] by hand\n [2] JSON file\n")
-if input_choice == "1":
-    json_data = collect_client_input()
-elif input_choice == "2":
-    json_data = collect_client_file()
-else:
-    pass # TODO what do we want to do in this case? close the program?
-
-
-send_message(json_data)
-send_message(DISCONNECT)
+while True:
+    input_choice = int(input("How would you like to input your data?\n [1] by hand\n [2] JSON file\n [0] to quit\n"))
+    if input_choice == 0:
+        send_message(DISCONNECT)
+        break
+    elif input_choice == 1:
+        json_data = collect_client_input()
+        send_message(json_data)
+    elif input_choice == 2:
+        json_data = collect_client_file()
+        send_message(json_data)
+    else:
+         print(f"{input_choice}, is not either 0/1/2, try again or press 0 to quit: ")

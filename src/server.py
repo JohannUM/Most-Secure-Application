@@ -1,3 +1,4 @@
+from required import messageFormating as mf
 import socket
 import threading
 import json
@@ -5,12 +6,12 @@ import json
 PORT = 5050
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
-HEADER = 64
-FORMAT = 'utf-8'
 DISCONNECT = "Sock It"
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
+
+
 
 current_connection_details = {}
 
@@ -24,6 +25,7 @@ def handle_json(msg, conn):
     actions = data["actions"]["steps"]
     delay = data["actions"]["delay"]
     print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
+    """ TODO fix and test properly
     if id not in current_connection_details:
         current_connection_details[id] = {"password":password}
         handle_actions(actions)
@@ -39,19 +41,19 @@ def handle_json(msg, conn):
             handle_actions(actions) # Password correct confirmation message.
         else:
             pass #return message about wrong password
+    """
 
 def handle_client(conn, addr):
     print(f"New Connection {addr}")
     while True:
-        message_length = conn.recv(HEADER).decode(FORMAT)
-        if message_length:
-            message_length = int(message_length)
-            message = conn.recv(message_length).decode(FORMAT)
-            if message == DISCONNECT:
-                break
+        message = mf.decode_message(conn)
+        if message == DISCONNECT:
+            break
+        elif message != "":
             #print(f"{addr}: {message}")
             handle_json(message, conn)
-            conn.send("Message received".encode(FORMAT))
+            mf.encode_message("Message Received!", conn)
+    print(f"Connection closed {addr}")
     conn.close()
 
 
