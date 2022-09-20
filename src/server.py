@@ -25,6 +25,12 @@ def handle_json(msg, conn):
     actions = data["actions"]["steps"]
     delay = data["actions"]["delay"]
     print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
+    for con in current_connection_details:
+        if con["id"] == id:
+            if check_password(con,password):
+                pass #The password is correct, TODO add client to list
+            else:
+                mf.encode_message("Reject this dude",conn)
     """ TODO fix and test properly
     if id not in current_connection_details:
         current_connection_details[id] = {"password":password}
@@ -42,6 +48,15 @@ def handle_json(msg, conn):
         else:
             pass #return message about wrong password
     """
+
+def check_password(con, password):
+
+    if password == con["password"]:
+        return True
+    else:
+        return False
+
+
 
 def handle_client(conn, addr):
     print(f"New Connection {addr}")
