@@ -11,9 +11,8 @@ DISCONNECT = "Sock It"
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
 
-
-
-current_connection_details = [{}]
+current_connection_passwords = {}
+current_connection_counters = {}
 
 def handle_actions(actions):
     pass
@@ -24,34 +23,23 @@ def handle_json(msg, conn):
     password = data["password"]
     actions = data["actions"]["steps"]
     delay = data["actions"]["delay"]
-    print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
-    for con in current_connection_details:
-        if con["id"] == id:
-            if check_password(con,password):
-                pass #The password is correct, TODO add client to list
-            else:
-                mf.encode_message("Reject this dude",conn)
-    """ TODO fix and test properly
-    if id not in current_connection_details:
-        current_connection_details[id] = {"password":password}
-        handle_actions(actions)
+
+    if id not in current_connection_passwords:
+        add_conn_details(id, password)
+        print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
     else:
-        conn.send(f"Enter password for {id}: ".encode(FORMAT))
-        pLength = conn.recv(HEADER).decode(FORMAT)
-        pSent = ""
-        if pLength:
-            pLength = int(pLength)
-            pSent = conn.recv(pLength).decode(FORMAT)
-        if current_connection_details[id]["password"] == pSent:
-            current_connection_details[id] = {"password":password}
-            handle_actions(actions) # Password correct confirmation message.
+        if check_password(current_connection_passwords[id], password):
+            print("HERE")
+            pass
         else:
-            pass #return message about wrong password
-    """
+            mf.encode_message("\nACCESS DENIED: Another user with same ID already logged in with different password...\n",conn)
 
-def check_password(con, password):
+def add_conn_details(id, password):
+    current_connection_passwords[id] = password
+    current_connection_counters[id] = 0
 
-    if password == con["password"]:
+def check_password(password1, password2):
+    if password1 == password2:
         return True
     else:
         return False
