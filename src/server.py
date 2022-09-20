@@ -13,7 +13,7 @@ server.bind(ADDR)
 
 
 
-current_connection_details = {}
+current_connection_details = [{}]
 
 def handle_actions(actions):
     pass
