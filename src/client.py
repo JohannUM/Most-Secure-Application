@@ -1,4 +1,5 @@
 from required import messageFormating as mf
+from required import validation as val
 import socket
 import json
 
@@ -15,6 +16,7 @@ client.connect(ADDR)
 def send_message(message):
     mf.encode_message(message, client)
     print(mf.decode_message(client))
+
 
 # collects input that client enters by hand
 def collect_client_input():
@@ -47,9 +49,15 @@ while True:
         break
     elif input_choice == 1:
         json_data = collect_client_input()
-        send_message(json_data)
+        if val.validate(json_data):
+            send_message(json_data)
+        else:
+            print("Incorrect data fromat, please try again.")
     elif input_choice == 2:
         json_data = collect_client_file()
-        send_message(json_data)
+        if val.validate(json_data):
+            send_message(json_data)
+        else:
+            print("Incorrect data fromat, please try again.")
     else:
          print(f"{input_choice}, is not either 0/1/2, try again or press 0 to quit: ")
