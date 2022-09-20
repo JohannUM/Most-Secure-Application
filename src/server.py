@@ -1,3 +1,5 @@
+import time
+from turtle import delay
 from required import messageFormating as mf
 import socket
 import threading
@@ -17,31 +19,34 @@ current_connection_passwords = {}
 current_connection_counters = {}
 conn_details_lock = threading.Lock()
 
-def handle_actions(id, actions):
+def handle_actions(id, actions, delay):
     for action in actions:
         if "INCREASE" in action:
             amount = [int(s) for s in action.split() if s.isdigit()]
             with conn_details_lock:
                 current_connection_counters[id] += amount[0]
+                print("Increase")
         elif "DECREASE" in action:
             amount = [int(s) for s in action.split() if s.isdigit()]
             with conn_details_lock:
                 current_connection_counters[id] -= amount[0]
+                print("Decrease")
+        time.sleep(delay)
 
 def handle_json(msg, conn):
     data = json.loads(msg)
     id = data["id"]
     password = data["password"]
     actions = data["actions"]["steps"]
-    handle_actions(actions)
-    delay = data["actions"]["delay"]
+    delay = int(data["actions"]["delay"])
 
     if id not in current_connection_passwords:
         add_conn_details(id, password)
+        handle_actions(id, actions, delay)
         print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
     else:
         if check_password(current_connection_passwords[id], password):
-            print("HERE")
+            handle_actions(id, actions, delay)
             pass
         else:
             mf.encode_message("\nACCESS DENIED: Another user with same ID already logged in with different password...\n",conn)
@@ -68,6 +73,7 @@ def handle_client(conn, addr):
             #print(f"{addr}: {message}")
             handle_json(message, conn)
             mf.encode_message("Message Received!", conn)
+        
     print(f"Connection closed {addr}")
     conn.close()
 

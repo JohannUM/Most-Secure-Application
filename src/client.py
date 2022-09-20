@@ -27,7 +27,7 @@ def collect_client_input():
         if action == "q":
             break
         actions.append(action)
-    delay = int(input("Enter the dealy between actions: "))
+    delay = int(input("Enter the delay between actions: "))
 
     data = {"id":id, "password":password, "server":{"ip":SERVER, "port":PORT}, "actions":{"delay":delay, "steps":actions}}
     return json.dumps(data)
