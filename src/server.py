@@ -13,18 +13,29 @@ server.bind(ADDR)
 
 
 
-current_connection_details = [{}]
+current_connection_password = {}
+current_connection_counters = {}
+conn_details_lock = threading.Lock()
 
-def handle_actions(actions):
-    pass
+def handle_actions(id, actions):
+    for action in actions:
+        if "INCREASE" in action:
+            amount = [int(s) for s in action.split() if s.isdigit()]
+            with conn_details_lock:
+                current_connection_counters[id] += amount[0]
+        elif "DECREASE" in action:
+            amount = [int(s) for s in action.split() if s.isdigit()]
+            with conn_details_lock:
+                current_connection_counters[id] -= amount[0]
 
 def handle_json(msg, conn):
     data = json.loads(msg)
     id = data["id"]
     password = data["password"]
     actions = data["actions"]["steps"]
+    handle_actions(actions)
     delay = data["actions"]["delay"]
-    print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
+    #print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
     """ TODO fix and test properly
     if id not in current_connection_details:
         current_connection_details[id] = {"password":password}
