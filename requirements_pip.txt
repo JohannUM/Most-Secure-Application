@@ -1,0 +1,4 @@
+certifi @ file:///C:/b/abs_4f5wo627a3/croots/recipe/certifi_1663615677642/work/certifi
+contextlib2 @ file:///C:/b/abs_0esl3sdprx/croots/recipe/contextlib2_1663665200516/work
+schema @ file:///C:/b/abs_1d32vhm1q4/croots/recipe/schema_1663666370420/work
+wincertstore==0.2
