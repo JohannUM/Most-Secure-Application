@@ -38,23 +38,18 @@ def validate(json_str):
         return False
 
     # check if [ip] and [port] is in correct format
-    if re.compile('\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}').match(json_dict['server']['ip']) is None:
+    if re.compile('\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}').match(json_dict['server']['ip']) is None:
         return False
-    if re.compile('\d{4}').match(json_dict['server']['port']) is None:
+    if re.compile('\\d{4}').match(json_dict['server']['port']) is None:
         return False
 
     # check if [steps] are in correct format
     for step in json_dict['actions']['steps']:
         try:
-            if re.compile('INCREASE \d').match(step) is None and re.compile('DECREASE \d').match(step) is None:
+            if re.compile('INCREASE \\d').match(step) is None and re.compile('DECREASE \\d').match(step) is None:
                 return False
         except TypeError:
             return False
 
     return True
-    
-
-    
-
-
 
