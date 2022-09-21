@@ -1,4 +1,1 @@
-# Most-Secure-Application
-HA Fuck the SYSTEM!!
-
-kick Matthew plz ._.
+This git repo contains code for secure client server communication through the python-socket library and architecture it provides.
