@@ -1,0 +1,8 @@
+- JSON handling -> checking for right format etc. -> Nicolas
+- Max Delay? -> No (Check for overflow)
+X Implement Delay -> Moath, Vikram
+X Password handling -> Alex
+X Handling actions, counter implementation -> Johann
+- Log file (only write, NO READ!!!!!!!!!!!!!!!!!!!!!!) -> Matthew
+- more security stuff
+- Check for overflows
