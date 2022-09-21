@@ -3,14 +3,14 @@ import json
 import re
 
 SCHEMA = Schema({
-    'id': str,
+    'id': And(Use(int)),
     'password': str,
     'server': {
         'ip': str,
         'port': And(Use(str)),
     },
     'actions': {
-        'delay': Use(int),
+        'delay': And(Use(int)),
         'steps': list
     }
 })
