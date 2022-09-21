@@ -29,7 +29,6 @@ def validate(json_str):
     # check if json_str can be converted to dictionary data type
     try:
         json_dict = json.loads(json_str)
-        print(json_dict)
     except json.decoder.JSONDecodeError:
         return False
 

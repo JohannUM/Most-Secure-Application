@@ -55,21 +55,21 @@ def collect_client_file():
 
 
 while True:
-    input_choice = int(input("How would you like to input your data?\n [1] by hand\n [2] JSON file\n [0] to quit\n"))
-    if input_choice == 0:
+    input_choice = str(input("How would you like to input your data?\n [1] by hand\n [2] JSON file\n [0] to quit\n"))
+    if input_choice == "0":
         send_message(DISCONNECT)
         break
-    elif input_choice == 1:
+    elif input_choice == "1":
         json_data = collect_client_input()
         if val.validate(json_data):
             send_message(json_data)
         else:
-            print("Incorrect data format, please try again.")
-    elif input_choice == 2:
+            print("Incorrect data format, please try again.\n")
+    elif input_choice == "2":
         json_data = collect_client_file()
         if val.validate(json_data):
             send_message(json_data)
         else:
-            print("Incorrect data format, please try again.")
+            print("Incorrect data format, please try again.\n")
     else:
-        print(f"{input_choice}, is not either 0/1/2, try again or press 0 to quit: ")
+        print(f"{input_choice}, is not either 0/1/2, try again.\n")

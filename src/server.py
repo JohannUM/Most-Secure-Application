@@ -52,7 +52,7 @@ def handle_client(conn, addr):
         elif message != "":
             #print(f"{addr}: {message}")
             handle_json(message, conn)
-            mf.encode_message("Message Received!", conn)
+            mf.encode_message("Message Received!\n", conn)
     print(f"Connection closed {addr}")
     conn.close()
 
