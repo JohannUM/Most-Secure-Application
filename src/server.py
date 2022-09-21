@@ -54,7 +54,7 @@ def handle_json(msg, conn):
         print(current_id_total)
         add_conn_details(id, password)
         with open("logfile.txt", "a") as logfile:
-            logfile.write(f"{id},Logged In,0\n")
+            logfile.write(f"{id},Logged In,{current_connection_counters[id]}\n")
         handle_actions(id, actions, delay)
         print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
     else:
@@ -63,14 +63,14 @@ def handle_json(msg, conn):
                 current_id_total[id] += 1
             print(current_id_total)
             with open("logfile.txt", "a") as logfile:
-                logfile.write(f"{id},Logged In,0\n")
+                logfile.write(f"{id},Logged In,{current_connection_counters[id]}\n")
             handle_actions(id, actions, delay)
             print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
         else:
             mf.encode_message("\nACCESS DENIED: Another user with same ID already logged in with different password...\n",conn)
     remove_conn_details(id)
     with open("logfile.txt", "a") as logfile:
-        logfile.write(f"{id},Logged Out,0\n")
+        logfile.write(f"{id},Logged Out,{current_connection_counters[id]}\n")
     print(current_id_total)
 
 def add_conn_details(id, password):
