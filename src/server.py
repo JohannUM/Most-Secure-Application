@@ -1,5 +1,4 @@
 import time
-from turtle import delay
 from required import messageFormating as mf
 import socket
 import threading
@@ -14,10 +13,13 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
 
 
-
 current_connection_passwords = {}
 current_connection_counters = {}
+current_id_total = {}
+
 conn_details_lock = threading.Lock()
+id_total_lock = threading.Lock()
+
 
 def handle_actions(id, actions, delay):
     for action in actions:
@@ -25,12 +27,12 @@ def handle_actions(id, actions, delay):
             amount = [int(s) for s in action.split() if s.isdigit()]
             with conn_details_lock:
                 current_connection_counters[id] += amount[0]
-                print("Increase")
+                print(f"Increase by {amount[0]} and counter is now: {current_connection_counters[id]}")
         elif "DECREASE" in action:
             amount = [int(s) for s in action.split() if s.isdigit()]
             with conn_details_lock:
                 current_connection_counters[id] -= amount[0]
-                print("Decrease")
+                print(f"Decrease by {amount[0]} and counter is now: {current_connection_counters[id]}")
         time.sleep(delay)
 
 def handle_json(msg, conn):
@@ -41,19 +43,39 @@ def handle_json(msg, conn):
     delay = int(data["actions"]["delay"])
 
     if id not in current_connection_passwords:
+        with id_total_lock:
+            current_id_total[id] = 1
+        print(current_id_total)
         add_conn_details(id, password)
         handle_actions(id, actions, delay)
         print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
     else:
         if check_password(current_connection_passwords[id], password):
+            with id_total_lock:
+                current_id_total[id] += 1
+            print(current_id_total)
             handle_actions(id, actions, delay)
-            pass
+            print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
         else:
             mf.encode_message("\nACCESS DENIED: Another user with same ID already logged in with different password...\n",conn)
+    remove_conn_details(id)
+    print(current_id_total)
 
+    
 def add_conn_details(id, password):
     current_connection_passwords[id] = password
     current_connection_counters[id] = 0
+
+def remove_conn_details(id):
+    global current_id_total
+    with id_total_lock:
+        if current_id_total[id]:
+            if current_id_total[id] > 1:
+                current_id_total[id] -= 1
+            elif current_id_total[id] == 1:
+                current_id_total.pop(id)
+                current_connection_counters.pop(id)
+                current_connection_passwords.pop(id)
 
 def check_password(password1, password2):
     if password1 == password2:
@@ -72,6 +94,7 @@ def handle_client(conn, addr):
         elif message != "":
             #print(f"{addr}: {message}")
             handle_json(message, conn)
+
             mf.encode_message("Message Received!", conn)
         
     print(f"Connection closed {addr}")
