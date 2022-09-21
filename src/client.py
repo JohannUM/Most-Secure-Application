@@ -25,7 +25,7 @@ def collect_client_input():
     actions = []
     print("Enter your actions (q to quit): ")
     while True:
-        action = str(input())
+        action = input()
         if action == "q":
             break
         actions.append(action)
@@ -65,7 +65,7 @@ def collect_client_file():
 
 
 while True:
-    input_choice = str(input("How would you like to input your data?\n [1] by hand\n [2] JSON file\n [0] to quit\n"))
+    input_choice = input("How would you like to input your data?\n [1] by hand\n [2] JSON file\n [0] to quit\n")
     if input_choice == "0":
         send_message(DISCONNECT)
         break
