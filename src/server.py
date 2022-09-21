@@ -20,6 +20,8 @@ conn_details_lock = threading.Lock()
 id_total_lock = threading.Lock()
 
 def handle_actions(id, actions, delay):
+    i = 0
+    final = len(actions)
     for action in actions:
         if "INCREASE" in action:
             amount = [int(s) for s in action.split() if s.isdigit()]
@@ -35,7 +37,9 @@ def handle_actions(id, actions, delay):
                 with open("logfile.txt", "a") as logfile:
                     logfile.write(f"{id},DECREASE {amount[0]},{current_connection_counters[id]}\n")
                 print(f"Decrease by {amount[0]} and counter is now: {current_connection_counters[id]}")
-        time.sleep(delay)
+        i+=1
+        if i < final:
+            time.sleep(delay)
 
 def handle_json(msg, conn):
     data = json.loads(msg)
