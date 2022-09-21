@@ -1,7 +1,1 @@
-certifi==2022.9.14
-contextlib2==21.6.0
-pip==22.1.2
 schema==0.7.5
-setuptools==63.4.1
-wheel==0.37.1
-wincertstore==0.2
