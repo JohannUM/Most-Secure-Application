@@ -48,9 +48,19 @@ def collect_client_input():
 
 # collects input that client enters by providing a json file
 def collect_client_file():
-    file = open("../data/" + input("Enter filename: "))  # TODO check for valid file that follows the format given
-    data = json.load(file)
-    file.close()
+    while True:
+        file_name = input("Enter filename: ")
+        try:
+            file = open("../data/" + file_name)
+            try:
+                data = json.load(file)
+                file.close()
+                break
+            except json.decoder.JSONDecodeError:
+                print(f"data/{file_name} cannot be read. It seems to not follow the JSON structure. Please try again.")
+                file.close()
+        except FileNotFoundError:
+            print(f"data/{file_name} does not exist. Please try again.")
     return json.dumps(data)
 
 
