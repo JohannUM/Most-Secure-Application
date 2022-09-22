@@ -1,5 +1,4 @@
 from required import messageFormating as mf
-from random import randint
 import socket
 import threading
 import json
@@ -9,9 +8,6 @@ PORT = 5050
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
 DISCONNECT = "Sock It"
-PRIVATE_VALUE = randint(1000000) # Private value, random for every new client
-G = 6143 # Public values
-P = 7919
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
@@ -22,13 +18,6 @@ current_id_total = {}
 
 conn_details_lock = threading.Lock()
 id_total_lock = threading.Lock()
-
-def exchange_key(conn):
-    public_key = (G**PRIVATE_VALUE) % P
-    mf.encode_message(str(public_key), conn)
-    client_public_key = int(mf.decode_message(conn))
-    private_key = (client_public_key**PRIVATE_VALUE) % P
-    return private_key
 
 def handle_actions(id, actions, delay):
     i = 0

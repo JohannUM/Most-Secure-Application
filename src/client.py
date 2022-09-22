@@ -1,6 +1,5 @@
 from required import messageFormating as mf
 from required import validation as val
-from random import randint
 import socket
 import json
 
@@ -8,19 +7,10 @@ PORT = 5050
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
 DISCONNECT = "Sock It"
-PRIVATE_VALUE = randint(1000000) # Private value, random for every new client
-G = 6143 # Public values
-P = 7919
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(ADDR)
 
-def exchange_key():
-    public_key = (G**PRIVATE_VALUE) % P
-    send_message(str(public_key))
-    server_public_key = int(mf.decode_message(client))
-    private_key = (server_public_key**PRIVATE_VALUE) % P
-    return private_key
 
 # sends a message to the server
 def send_message(message):
