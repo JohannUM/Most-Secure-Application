@@ -8,7 +8,7 @@ PORT = 5050
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
 DISCONNECT = "Sock It"
-PRIVATE_VALUE = randint(1000000) # Private value, random for every new client
+PRIVATE_VALUE = randint(1, 10000) # Private value, random for every new client
 G = 6143 # Public values
 P = 7919
 
@@ -17,16 +17,17 @@ client.connect(ADDR)
 
 def exchange_key():
     public_key = (G**PRIVATE_VALUE) % P
-    send_message(str(public_key))
+    mf.encode_message(str(public_key), client)
     server_public_key = int(mf.decode_message(client))
     private_key = (server_public_key**PRIVATE_VALUE) % P
     return private_key
+
+key = exchange_key()
 
 # sends a message to the server
 def send_message(message):
     mf.encode_message(message, client)
     print(mf.decode_message(client))
-
 
 # collects input that client enters by hand
 def collect_client_input():
@@ -72,7 +73,6 @@ def collect_client_file():
         except FileNotFoundError:
             print(f"data/{file_name} does not exist. Please try again.")
     return json.dumps(data)
-
 
 while True:
     input_choice = input("How would you like to input your data?\n [1] by hand\n [2] JSON file\n [0] to quit\n")

@@ -9,7 +9,7 @@ PORT = 5050
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
 DISCONNECT = "Sock It"
-PRIVATE_VALUE = randint(1000000) # Private value, random for every new client
+PRIVATE_VALUE = randint(1, 10000) # Private value, random for every new client
 G = 6143 # Public values
 P = 7919
 
@@ -107,6 +107,7 @@ def check_password(password1, password2):
         return False
 
 def handle_client(conn, addr):
+    key = exchange_key(conn)
     print(f"New Connection {addr}")    
     while True:
         message = mf.decode_message(conn)
