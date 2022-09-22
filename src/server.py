@@ -68,9 +68,10 @@ def handle_json(msg, conn):
             print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
         else:
             mf.encode_message("\nACCESS DENIED: Another user with same ID already logged in with different password...\n",conn)
-    remove_conn_details(id)
+
     with open("logfile.txt", "a") as logfile:
         logfile.write(f"{id},Logged Out,{current_connection_counters[id]}\n")
+    remove_conn_details(id)
     print(current_id_total)
 
 def add_conn_details(id, password):
