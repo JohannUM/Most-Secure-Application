@@ -1,21 +1,32 @@
 from cryptography.fernet import Fernet as fern
+import sys
 from required import messageFormating as mf
 from required import validation as val
-from random import randint
 import socket
 import base64
 import json
 
-PORT = 5050
-SERVER = socket.gethostbyname(socket.gethostname())
-ADDR = (SERVER, PORT)
+
 DISCONNECT = "Sock It"
 PRIVATE_VALUE = randint(1, 10000) # Private value, random for every new client
 G = 6143 # Public values
 P = 7919
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(ADDR)
+def connect(json_str):
+    if val.validate(json_str):
+        json_dict = json.loads(json_str)
+        try:
+            client.connect((json_dict['server']['ip'], int(json_dict['server']['port'])))
+            key = exchange_key()
+            f_key = fern(base64.urlsafe_b64encode((key).to_bytes(32, byteorder="big"))) # add to message formatting, to allow for sending encrypted messages
+        except TimeoutError:
+            print("Incorrect server ip and/or port, please try again.\n")
+            return False
+        return True
+    else:
+        print("Incorrect data and/or data format, please try again.\n")
+        return False
 
 def exchange_key():
     public_key = (G**PRIVATE_VALUE) % P
@@ -23,9 +34,6 @@ def exchange_key():
     server_public_key = int(mf.decode_message(client))
     private_key = (server_public_key**PRIVATE_VALUE) % P
     return private_key
-
-key = exchange_key()
-f_key = fern(base64.urlsafe_b64encode((key).to_bytes(32, byteorder="big"))) # add to message formatting, to allow for sending encrypted messages
 
 # sends a message to the server
 def send_message(message):
@@ -37,6 +45,8 @@ def send_message(message):
 def collect_client_input():
     id = input("Enter your ID: ")
     password = input("Enter your password: ")
+    server = input("Enter the server IP: ")
+    port = input("Enter the server port: ")
     actions = []
     print("Enter your actions (q to quit): ")
     while True:
@@ -50,8 +60,8 @@ def collect_client_input():
         "id": str(id),
         "password": str(password),
         "server": {
-            "ip": str(SERVER),
-            "port": str(PORT)
+            "ip": str(server),
+            "port": str(port)
         },
         "actions": {
             "delay": str(delay),
@@ -78,22 +88,17 @@ def collect_client_file():
             print(f"data/{file_name} does not exist. Please try again.")
     return json.dumps(data)
 
-while True:
-    input_choice = input("How would you like to input your data?\n [1] by hand\n [2] JSON file\n [0] to quit\n")
-    if input_choice == "0":
-        send_message(DISCONNECT)
-        break
-    elif input_choice == "1":
-        json_data = collect_client_input()
-        if val.validate(json_data):
-            send_message(json_data)
-        else:
-            print("Incorrect data format, please try again.\n")
-    elif input_choice == "2":
-        json_data = collect_client_file()
-        if val.validate(json_data):
-            send_message(json_data)
-        else:
-            print("Incorrect data format, please try again.\n")
-    else:
-        print(f"{input_choice}, is not either 0/1/2, try again.\n")
+
+input_choice = input("How would you like to input your data?\n [1] by hand\n [2] JSON file\n [0] to quit\n")
+if input_choice == "0":
+    pass
+elif input_choice == "1":
+    json_data = collect_client_input()
+    if connect(json_data):
+        send_message(json_data)
+elif input_choice == "2":
+    json_data = collect_client_file()
+    if connect(json_data):
+        send_message(json_data)
+else:
+    print(f"{input_choice}, is not either 0/1/2, try again.\n")

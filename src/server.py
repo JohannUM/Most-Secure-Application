@@ -1,6 +1,5 @@
 from cryptography.fernet import Fernet as fern
 from required import messageFormating as mf
-from random import randint
 import socket
 import threading
 import json
@@ -24,11 +23,11 @@ current_id_total = {}
 conn_details_lock = threading.Lock()
 id_total_lock = threading.Lock()
 
-def exchange_key(conn):
+def exchange_key():
     public_key = (G**PRIVATE_VALUE) % P
-    mf.encode_message(str(public_key), conn)
-    client_public_key = int(mf.decode_message(conn))
-    private_key = (client_public_key**PRIVATE_VALUE) % P
+    mf.encode_message(str(public_key), client)
+    server_public_key = int(mf.decode_message(client))
+    private_key = (server_public_key**PRIVATE_VALUE) % P
     return private_key
 
 def handle_actions(id, actions, delay):
