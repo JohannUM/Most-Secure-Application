@@ -29,8 +29,8 @@ f_key = fern(base64.urlsafe_b64encode((key).to_bytes(32, byteorder="big"))) # ad
 
 # sends a message to the server
 def send_message(message):
-    msg = f_key.encrypt(message.encode())
-    mf.encode_message(msg, client)
+    #msg = f_key.encrypt(message.encode())
+    mf.encode_message(message, client)
     print(mf.decode_message(client))
 
 # collects input that client enters by hand
