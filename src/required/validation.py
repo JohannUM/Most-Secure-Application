@@ -1,16 +1,18 @@
-from schema import Schema, And, Use, Optional, SchemaError
+from schema import Schema, Use, SchemaError
+import socket
 import json
 import re
 
+
 SCHEMA = Schema({
-    'id': And(Use(int)),
+    'id': str,
     'password': str,
     'server': {
         'ip': str,
-        'port': And(Use(str)),
+        'port': Use(int),
     },
     'actions': {
-        'delay': And(Use(int)),
+        'delay': Use(int),
         'steps': list
     }
 })
@@ -25,7 +27,6 @@ def check(conf_schema, conf):
 
 
 def validate(json_str):
-
     # check if json_str can be converted to dictionary data type
     try:
         json_dict = json.loads(json_str)
@@ -36,10 +37,16 @@ def validate(json_str):
     if check(SCHEMA, json_dict) is False:
         return False
 
-    # check if [ip] and [port] is in correct format
-    if re.compile('\\d{1,3}.\\d{1,3}.\\d{1,3}.\\d{1,3}').match(json_dict['server']['ip']) is None:
+    # check if [ip] is in correct format
+    try:
+        socket.inet_aton(json_dict['server']['ip'])
+    except socket.error:
         return False
-    if re.compile('\\d{4}').match(json_dict['server']['port']) is None:
+
+    # check if [port] is in correct format
+    if 1 <= int(json_dict['server']['port']) <= 65535:
+        pass
+    else:
         return False
 
     # check if [steps] are in correct format
@@ -51,4 +58,3 @@ def validate(json_str):
             return False
 
     return True
-

@@ -2,7 +2,7 @@
     "id": "1234",
     "password": "verysafepassword1234",
     "server": {
-        "ip": "137.120.75.196",
+        "ip": "137.120.ddd75.196",
         "port": "5050"
     },
     "actions": {
