@@ -1,3 +1,5 @@
+import sys
+
 from required import messageFormating as mf
 from required import validation as val
 import socket
@@ -6,10 +8,9 @@ import json
 
 DISCONNECT = "Sock It"
 
-
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 def connect(json_str):
-    global client
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    #global client
     if val.validate(json_str):
         json_dict = json.loads(json_str)
         try:
@@ -79,7 +80,7 @@ def collect_client_file():
 
 input_choice = input("How would you like to input your data?\n [1] by hand\n [2] JSON file\n [0] to quit\n")
 if input_choice == "0":
-    send_message(DISCONNECT)
+    pass
 elif input_choice == "1":
     json_data = collect_client_input()
     if connect(json_data):
