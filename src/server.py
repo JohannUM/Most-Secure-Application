@@ -1,3 +1,4 @@
+from cryptography.fernet import Fernet as fern
 from required import messageFormating as mf
 import socket
 import threading
@@ -8,6 +9,9 @@ PORT = 5050
 SERVER = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER, PORT)
 DISCONNECT = "Sock It"
+PRIVATE_VALUE = randint(1, 10000) # Private value, random for every new client
+G = 6143 # Public values
+P = 7919
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
@@ -18,6 +22,13 @@ current_id_total = {}
 
 conn_details_lock = threading.Lock()
 id_total_lock = threading.Lock()
+
+def exchange_key():
+    public_key = (G**PRIVATE_VALUE) % P
+    mf.encode_message(str(public_key), client)
+    server_public_key = int(mf.decode_message(client))
+    private_key = (server_public_key**PRIVATE_VALUE) % P
+    return private_key
 
 def handle_actions(id, actions, delay):
     i = 0
@@ -96,14 +107,15 @@ def check_password(password1, password2):
         return False
 
 def handle_client(conn, addr):
-    print(f"New Connection {addr}")    
+    key = exchange_key(conn)
+    print(f"New Connection {addr}")   
     while True:
         message = mf.decode_message(conn)
         if message == DISCONNECT:
             break
         elif message != "":
-            #print(f"{addr}: {message}")
-            handle_json(message, conn)
+            print(f"{addr}: {message}")
+            #handle_json(message, conn)
             mf.encode_message("Message Received!\n", conn)
     print(f"Connection closed {addr}")
     conn.close()
