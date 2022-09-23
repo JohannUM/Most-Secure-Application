@@ -18,8 +18,8 @@ def connect(json_str):
         json_dict = json.loads(json_str)
         try:
             client.connect((json_dict['server']['ip'], int(json_dict['server']['port'])))
+            global key 
             key = exchange_key()
-            f_key = fern(base64.urlsafe_b64encode((key).to_bytes(32, byteorder="big"))) # add to message formatting, to allow for sending encrypted messages
         except TimeoutError:
             print("Incorrect server ip and/or port, please try again.\n")
             return False
@@ -33,7 +33,7 @@ def exchange_key():
     mf.encode_message(str(public_key), client)
     server_public_key = int(mf.decode_message(client))
     private_key = (server_public_key**PRIVATE_VALUE) % P
-    return private_key
+    return fern(base64.urlsafe_b64encode((private_key).to_bytes(32, byteorder="big"))) # add to message formatting, to allow for sending encrypted messages
 
 # sends a message to the server
 def send_message(message):

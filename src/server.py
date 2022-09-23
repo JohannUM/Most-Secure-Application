@@ -3,6 +3,7 @@ from required import messageFormating as mf
 from random import randint
 import socket
 import threading
+import base64
 import json
 import time
 
@@ -29,7 +30,7 @@ def exchange_key(conn):
     mf.encode_message(str(public_key), conn)
     server_public_key = int(mf.decode_message(conn))
     private_key = (server_public_key**PRIVATE_VALUE) % P
-    return private_key
+    return fern(base64.urlsafe_b64encode((private_key).to_bytes(32, byteorder="big"))) # add to message formatting, to allow for sending encrypted messages, decrypting encrypted messages
 
 def handle_actions(id, actions, delay):
     i = 0
@@ -107,6 +108,7 @@ def check_password(password1, password2):
         return False
 
 def handle_client(conn, addr):
+    global key
     key = exchange_key(conn)
     print(f"New Connection {addr}")   
     while True:
