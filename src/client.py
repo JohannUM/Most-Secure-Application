@@ -3,13 +3,24 @@ from required import validation as val
 import socket
 import json
 
-PORT = 5050
-SERVER = socket.gethostbyname(socket.gethostname())
-ADDR = (SERVER, PORT)
+
 DISCONNECT = "Sock It"
 
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(ADDR)
+
+def connect(json_str):
+    global client
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    if val.validate(json_str):
+        json_dict = json.loads(json_str)
+        try:
+            client.connect((json_dict['server']['ip'], int(json_dict['server']['port'])))
+        except TimeoutError:
+            print("Incorrect server ip and/or port, please try again.\n")
+            return False
+        return True
+    else:
+        print("Incorrect data and/or data format, please try again.\n")
+        return False
 
 
 # sends a message to the server
@@ -22,6 +33,8 @@ def send_message(message):
 def collect_client_input():
     id = input("Enter your ID: ")
     password = input("Enter your password: ")
+    server = input("Enter the server IP: ")
+    port = input("Enter the server port: ")
     actions = []
     print("Enter your actions (q to quit): ")
     while True:
@@ -35,8 +48,8 @@ def collect_client_input():
         "id": str(id),
         "password": str(password),
         "server": {
-            "ip": str(SERVER),
-            "port": str(PORT)
+            "ip": str(server),
+            "port": str(port)
         },
         "actions": {
             "delay": str(delay),
@@ -64,22 +77,16 @@ def collect_client_file():
     return json.dumps(data)
 
 
-while True:
-    input_choice = input("How would you like to input your data?\n [1] by hand\n [2] JSON file\n [0] to quit\n")
-    if input_choice == "0":
-        send_message(DISCONNECT)
-        break
-    elif input_choice == "1":
-        json_data = collect_client_input()
-        if val.validate(json_data):
-            send_message(json_data)
-        else:
-            print("Incorrect data format, please try again.\n")
-    elif input_choice == "2":
-        json_data = collect_client_file()
-        if val.validate(json_data):
-            send_message(json_data)
-        else:
-            print("Incorrect data format, please try again.\n")
-    else:
-        print(f"{input_choice}, is not either 0/1/2, try again.\n")
+input_choice = input("How would you like to input your data?\n [1] by hand\n [2] JSON file\n [0] to quit\n")
+if input_choice == "0":
+    send_message(DISCONNECT)
+elif input_choice == "1":
+    json_data = collect_client_input()
+    if connect(json_data):
+        send_message(json_data)
+elif input_choice == "2":
+    json_data = collect_client_file()
+    if connect(json_data):
+        send_message(json_data)
+else:
+    print(f"{input_choice}, is not either 0/1/2, try again.\n")
