@@ -1,3 +1,4 @@
+from cryptography.fernet import Fernet as fern
 from required import messageFormating as mf
 from random import randint
 import socket
@@ -108,14 +109,14 @@ def check_password(password1, password2):
 
 def handle_client(conn, addr):
     key = exchange_key(conn)
-    print(f"New Connection {addr}")    
+    print(f"New Connection {addr}")   
     while True:
         message = mf.decode_message(conn)
         if message == DISCONNECT:
             break
         elif message != "":
-            #print(f"{addr}: {message}")
-            handle_json(message, conn)
+            print(f"{addr}: {message}")
+            #handle_json(message, conn)
             mf.encode_message("Message Received!\n", conn)
     print(f"Connection closed {addr}")
     conn.close()

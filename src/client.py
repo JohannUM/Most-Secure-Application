@@ -1,7 +1,9 @@
+from cryptography.fernet import Fernet as fern
 from required import messageFormating as mf
 from required import validation as val
 from random import randint
 import socket
+import base64
 import json
 
 PORT = 5050
@@ -23,10 +25,12 @@ def exchange_key():
     return private_key
 
 key = exchange_key()
+f_key = fern(base64.urlsafe_b64encode((key).to_bytes(32, byteorder="big"))) # add to message formatting, to allow for sending encrypted messages
 
 # sends a message to the server
 def send_message(message):
-    mf.encode_message(message, client)
+    msg = f_key.encrypt(message.encode())
+    mf.encode_message(msg, client)
     print(mf.decode_message(client))
 
 # collects input that client enters by hand
