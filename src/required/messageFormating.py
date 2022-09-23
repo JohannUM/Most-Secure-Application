@@ -22,7 +22,6 @@ def encrypt_send(msg, conn, f_key):
     length += b' ' * (HEADER - len(length))
     conn.send(length)
     conn.send(encrypted)
-    print(f"Encrypted Message: {encrypted}")
 
 def receive_decrypt(conn, f_key):
     length = conn.recv(HEADER).decode(FORMAT)

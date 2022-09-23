@@ -103,5 +103,5 @@ elif input_choice == "2":
     json_data = collect_client_file()
     if connect(json_data):
         send_message_encrypt(json_data)
-else:
-    print(f"{input_choice}, is not either 0/1/2, try again.\n")
+
+mf.encrypt_send(DISCONNECT, client, key) # Makes it super clean and avoids any potential errors waiting!

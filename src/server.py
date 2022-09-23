@@ -117,7 +117,7 @@ def handle_client(conn, addr):
             break
         elif message != "":
             print(f"{addr}: {message}")
-            #handle_json(message, conn)
+            handle_json(message, conn)
             mf.encrypt_send("Message Received!", conn, key)
     print(f"Connection closed {addr}")
     conn.close()
