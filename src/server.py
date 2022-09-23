@@ -7,7 +7,7 @@ import json
 import time
 
 PORT = 5050
-SERVER = socket.gethostbyname(socket.gethostname())
+SERVER = "127.0.0.1"
 ADDR = (SERVER, PORT)
 DISCONNECT = "Sock It"
 PRIVATE_VALUE = randint(1, 10000) # Private value, random for every new client

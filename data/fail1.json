@@ -2,7 +2,7 @@
     "id": "1234",
     "password": "supersafepassword1234",
     "server": {
-        "ip": "137.120.75.196",
+        "ip": "127.0.0.1",
         "port": "shit this port needs to be a 4 digit number"
     },
     "actions": {
