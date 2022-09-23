@@ -18,8 +18,8 @@ def connect(json_str):
         json_dict = json.loads(json_str)
         try:
             client.connect((json_dict['server']['ip'], int(json_dict['server']['port'])))
+            global key 
             key = exchange_key()
-            f_key = fern(base64.urlsafe_b64encode((key).to_bytes(32, byteorder="big"))) # add to message formatting, to allow for sending encrypted messages
         except TimeoutError:
             print("Incorrect server ip and/or port, please try again.\n")
             return False
@@ -33,13 +33,16 @@ def exchange_key():
     mf.encode_message(str(public_key), client)
     server_public_key = int(mf.decode_message(client))
     private_key = (server_public_key**PRIVATE_VALUE) % P
-    return private_key
+    return fern(base64.urlsafe_b64encode((private_key).to_bytes(32, byteorder="big"))) # add to message formatting, to allow for sending encrypted messages
 
 # sends a message to the server
 def send_message(message):
-    #msg = f_key.encrypt(message.encode())
     mf.encode_message(message, client)
     print(mf.decode_message(client))
+
+def send_message_encrypt(message):
+    mf.encrypt_send(message, client, key)
+    print(mf.receive_decrypt(client, key))
 
 # collects input that client enters by hand
 def collect_client_input():
@@ -95,10 +98,10 @@ if input_choice == "0":
 elif input_choice == "1":
     json_data = collect_client_input()
     if connect(json_data):
-        send_message(json_data)
+        send_message_encrypt(json_data)
 elif input_choice == "2":
     json_data = collect_client_file()
     if connect(json_data):
-        send_message(json_data)
-else:
-    print(f"{input_choice}, is not either 0/1/2, try again.\n")
+        send_message_encrypt(json_data)
+
+mf.encrypt_send(DISCONNECT, client, key) # Makes it super clean and avoids any potential errors waiting!
