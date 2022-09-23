@@ -112,13 +112,13 @@ def handle_client(conn, addr):
     key = exchange_key(conn)
     print(f"New Connection {addr}")   
     while True:
-        message = mf.decode_message(conn)
+        message = mf.receive_decrypt(conn, key)
         if message == DISCONNECT:
             break
         elif message != "":
             print(f"{addr}: {message}")
             #handle_json(message, conn)
-            mf.encode_message("Message Received!\n", conn)
+            mf.encrypt_send("Message Received!", conn, key)
     print(f"Connection closed {addr}")
     conn.close()
 

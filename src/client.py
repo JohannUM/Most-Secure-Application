@@ -37,9 +37,12 @@ def exchange_key():
 
 # sends a message to the server
 def send_message(message):
-    #msg = f_key.encrypt(message.encode())
     mf.encode_message(message, client)
     print(mf.decode_message(client))
+
+def send_message_encrypt(message):
+    mf.encrypt_send(message, client, key)
+    print(mf.receive_decrypt(client, key))
 
 # collects input that client enters by hand
 def collect_client_input():
@@ -95,10 +98,10 @@ if input_choice == "0":
 elif input_choice == "1":
     json_data = collect_client_input()
     if connect(json_data):
-        send_message(json_data)
+        send_message_encrypt(json_data)
 elif input_choice == "2":
     json_data = collect_client_file()
     if connect(json_data):
-        send_message(json_data)
+        send_message_encrypt(json_data)
 else:
     print(f"{input_choice}, is not either 0/1/2, try again.\n")
