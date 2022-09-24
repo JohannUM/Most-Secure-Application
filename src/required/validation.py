@@ -1,7 +1,7 @@
 from schema import Schema, Use, SchemaError
-import socket
 import json
 import re
+import ipaddress
 
 
 SCHEMA = Schema({
@@ -39,8 +39,8 @@ def validate(json_str):
 
     # check if [ip] is in correct format
     try:
-        socket.inet_aton(json_dict['server']['ip'])
-    except socket.error:
+        ipaddress.ip_address(json_dict['server']['ip'])
+    except ValueError:
         return False
 
     # check if [port] is in correct format
