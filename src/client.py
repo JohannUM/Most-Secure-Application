@@ -1,20 +1,74 @@
 from cryptography.fernet import Fernet as fern
 from required import messageFormating as mf
-from required import validation as val
+from schema import Schema, Use, SchemaError
 from random import randint
+import ipaddress
 import socket
 import base64
 import json
 
 
-DISCONNECT = "Sock It"
-PRIVATE_VALUE = randint(1, 10000) # Private value, random for every new client
-G = 6143 # Public values
-P = 7919
+# The correct schema of the json data
+SCHEMA = Schema({
+    'id': str,
+    'password': str,
+    'server': {
+        'ip': str,
+        'port': Use(int),
+    },
+    'actions': {
+        'delay': Use(int),
+        'steps': list
+    }
+})
 
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-def connect(json_str):
-    if val.validate(json_str):
+
+def validate_input(json_str: str):
+    """Validates the input by the user. Checks if json format is correct and if the ip and the port have the correct format
+
+    Args:
+        json_str (str): The JSON data as a string
+
+    Returns:
+        bool: True if format is correct, False if not
+    """    
+    # check if json_str can be converted to dictionary data type
+    try:
+        json_dict = json.loads(json_str)
+    except json.decoder.JSONDecodeError:
+        return False
+    
+    # check if json_dict follows SCHEMA
+    try:
+        SCHEMA.validate(json_dict)
+    except SchemaError:
+        return False
+    
+    # check if [ip] is in correct format
+    try:
+        ipaddress.ip_address(json_dict['server']['ip'])
+    except ValueError:
+        return False
+    
+    # check if [port] is in correct format
+    if 1 <= int(json_dict['server']['port']) <= 65535:
+        pass
+    else:
+        return False
+
+    return True
+
+
+def connect(json_str: str):
+    """ Connects the client to the server
+
+    Args:
+        json_str (str): The JSON data formatted as a string
+
+    Returns:
+        bool: True if connection was succesful, False if not
+    """    
+    if validate_input(json_str):
         json_dict = json.loads(json_str)
         try:
             client.connect((json_dict['server']['ip'], int(json_dict['server']['port'])))
@@ -28,24 +82,48 @@ def connect(json_str):
         print("Incorrect data and/or data format, please try again.\n")
         return False
 
+
 def exchange_key():
+    """ Performs a Diffie Hellman key exchange with the server
+
+    Returns:
+        key: The fern key
+    """    
     public_key = (G**PRIVATE_VALUE) % P
     mf.encode_message(str(public_key), client)
     server_public_key = int(mf.decode_message(client))
     private_key = (server_public_key**PRIVATE_VALUE) % P
     return fern(base64.urlsafe_b64encode((private_key).to_bytes(32, byteorder="big"))) # add to message formatting, to allow for sending encrypted messages
 
-# sends a message to the server
-def send_message(message):
+
+def send_message(message: str):
+    """Sends a provided message to the server
+
+    Args:
+        message (str): The JSON data formatted as a string
+    """    
     mf.encode_message(message, client)
     print(mf.decode_message(client))
 
-def send_message_encrypt(message):
+
+def send_message_encrypt(message: str):
+    """ Sends a provided message encrypted to the server and receives an answer
+
+    Args:
+        message (str): The JSON data formatted as a string
+    """    
+
     mf.encrypt_send(message, client, key)
     print(mf.receive_decrypt(client, key))
 
-# collects input that client enters by hand
+
 def collect_client_input():
+    """ Collect input from the client using the terminal and formats it to json
+
+    Returns:
+        str: A JSON file formatted as a string
+    """    
+
     id = input("Enter your ID: ")
     password = input("Enter your password: ")
     server = input("Enter the server IP: ")
@@ -74,8 +152,13 @@ def collect_client_input():
     return json.dumps(data)
 
 
-# collects input that client enters by providing a json file
 def collect_client_file():
+    """ Loads a JSON file if provided with a correct directory and file type
+
+    Returns:
+        str: A JSON file formatted as a string
+    """   
+
     while True:
         file_name = input("Enter filename: ")
         try:
@@ -91,8 +174,20 @@ def collect_client_file():
             print(f"data/{file_name} does not exist. Please try again.")
     return json.dumps(data)
 
-connected = False
-def choice(connected):
+
+def choice(connected: bool):
+    """ Presents the user with 3 possible choices: 
+        - Sending a message to the server using the terminal
+        - Sending a message to the server providing a json file
+        - Quit
+
+    Args:
+        connected (bool): True if connection was already established
+
+    Returns:
+        bool: True if connection could be established, False if not
+    """    
+
     input_choice = input("How would you like to input your data?\n [1] by hand\n [2] JSON file\n [0] to quit\n")
     if input_choice == "0":
         pass
@@ -102,20 +197,33 @@ def choice(connected):
             send_message_encrypt(json_data)
             connected = True
         else:
-             choice(False)
+            choice(False)
     elif input_choice == "2":
         json_data = collect_client_file()
         if connect(json_data):
             send_message_encrypt(json_data)
             connected = True
         else:
-              choice(False)
+            choice(False)
     else:
         print(f"{input_choice} is not 0/1/2, try again!")
         choice(False)
     return connected
 
-connected = choice(connected)
 
-if connected:
-    mf.encrypt_send(DISCONNECT, client, key) # Makes it super clean and avoids any potential errors waiting!
+if __name__ == "__main__":
+    # objects    
+    DISCONNECT = "Sock It"
+    PRIVATE_VALUE = randint(1, 10000) # Private value, random for every new client
+    G = 6143 # Public values
+    P = 7919
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    # Get input from user, validate the address and send the message as a json
+    connected = choice(False)
+
+    # If the cliet was able to establish a connection send the disconnect message to the server
+    if connected:
+        mf.encrypt_send(DISCONNECT, client, key) 
+
+    
