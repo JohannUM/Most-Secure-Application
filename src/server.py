@@ -108,7 +108,6 @@ def check_password(password1, password2):
         return False
 
 def handle_client(conn, addr):
-    global key
     key = exchange_key(conn)
     print(f"New Connection {addr}")   
     while True:
