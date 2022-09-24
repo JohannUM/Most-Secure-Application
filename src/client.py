@@ -91,17 +91,31 @@ def collect_client_file():
             print(f"data/{file_name} does not exist. Please try again.")
     return json.dumps(data)
 
+connected = False
+def choice(connected):
+    input_choice = input("How would you like to input your data?\n [1] by hand\n [2] JSON file\n [0] to quit\n")
+    if input_choice == "0":
+        pass
+    elif input_choice == "1":
+        json_data = collect_client_input()
+        if connect(json_data):
+            send_message_encrypt(json_data)
+            connected = True
+        else:
+            choice()
+    elif input_choice == "2":
+        json_data = collect_client_file()
+        if connect(json_data):
+            send_message_encrypt(json_data)
+            connected = True
+        else:
+            choice()
+    else:
+        print(f"{input_choice} is not 0/1/2, try again!")
+        choice()
+    return connected
 
-input_choice = input("How would you like to input your data?\n [1] by hand\n [2] JSON file\n [0] to quit\n")
-if input_choice == "0":
-    pass
-elif input_choice == "1":
-    json_data = collect_client_input()
-    if connect(json_data):
-        send_message_encrypt(json_data)
-elif input_choice == "2":
-    json_data = collect_client_file()
-    if connect(json_data):
-        send_message_encrypt(json_data)
+connected = choice(connected)
 
-mf.encrypt_send(DISCONNECT, client, key) # Makes it super clean and avoids any potential errors waiting!
+if connected:
+    mf.encrypt_send(DISCONNECT, client, key) # Makes it super clean and avoids any potential errors waiting!
