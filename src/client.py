@@ -92,7 +92,7 @@ def collect_client_file():
     return json.dumps(data)
 
 connected = False
-def choice():
+def choice(connected):
     input_choice = input("How would you like to input your data?\n [1] by hand\n [2] JSON file\n [0] to quit\n")
     if input_choice == "0":
         pass
@@ -113,8 +113,9 @@ def choice():
     else:
         print(f"{input_choice} is not 0/1/2, try again!")
         choice()
+    return connected
 
-choice()
+connected = choice(connected)
 
 if connected:
     mf.encrypt_send(DISCONNECT, client, key) # Makes it super clean and avoids any potential errors waiting!
