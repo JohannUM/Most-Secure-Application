@@ -102,17 +102,17 @@ def choice(connected):
             send_message_encrypt(json_data)
             connected = True
         else:
-            choice()
+             choice(False)
     elif input_choice == "2":
         json_data = collect_client_file()
         if connect(json_data):
             send_message_encrypt(json_data)
             connected = True
         else:
-            choice()
+              choice(False)
     else:
         print(f"{input_choice} is not 0/1/2, try again!")
-        choice()
+        choice(False)
     return connected
 
 connected = choice(connected)
