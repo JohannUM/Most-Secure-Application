@@ -205,7 +205,7 @@ def handle_client(conn, addr):
                 handle_json(message, conn)
                 mf.encrypt_send("Message Received!", conn, key)
             else:
-                mf.encrypt_send("JSON not in correct format!", conn, key)
+                mf.encrypt_send("Incorrect data and/or data format, please try again.", conn, key)
     print(f"Connection closed {addr}")
     conn.close()
 
