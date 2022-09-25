@@ -118,21 +118,21 @@ def handle_json(msg: str, conn):
     if id not in current_connection_passwords:
         with id_total_lock:
             current_id_total[id] = 1
-        print(current_id_total)
+        #print(current_id_total)
         add_conn_details(id, password)
         with open("logfile.txt", "a") as logfile:
             logfile.write(f"{id}\t\tLogged In\t\t{current_connection_counters[id]}\n")
         handle_actions(id, actions, delay)
-        print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
+        #print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
     else:
         if check_password(current_connection_passwords[id], password):
             with id_total_lock:
                 current_id_total[id] += 1
-            print(current_id_total)
+            #print(current_id_total)
             with open("logfile.txt", "a") as logfile:
                 logfile.write(f"{id}\t\tLogged In\t\t{current_connection_counters[id]}\n")
             handle_actions(id, actions, delay)
-            print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
+            #print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
         else:
             mf.encode_message("\nACCESS DENIED: Another user with same ID already logged in with different password...\n",conn)
 
@@ -197,7 +197,7 @@ def handle_client(conn, addr):
         if message == DISCONNECT:
             break
         elif message != "":
-            print(f"{addr}: {message}")
+            #print(f"{addr}: {message}")
             if validate_actions(message):
                 handle_json(message, conn)
                 mf.encrypt_send("Message Received!", conn, key)
