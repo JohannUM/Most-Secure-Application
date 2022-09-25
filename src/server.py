@@ -89,14 +89,14 @@ def handle_actions(id: str, actions: list, delay: int):
                 current_connection_counters[id] += amount[0]
                 with open("logfile.txt", "a") as logfile:
                     logfile.write(f"{id}\t\tINCREASE {amount[0]}\t\t{current_connection_counters[id]}\n")
-                print(f"Increase by {amount[0]} and counter is now: {current_connection_counters[id]}")
+                print(f"Increase by {amount[0]} and counter for id - {id} is now: {current_connection_counters[id]}")
         elif "DECREASE" in action:
             amount = [int(s) for s in action.split() if s.isdigit()]
             with conn_details_lock:
                 current_connection_counters[id] -= amount[0]
                 with open("logfile.txt", "a") as logfile:
                     logfile.write(f"{id}\t\tDECREASE {amount[0]}\t\t{current_connection_counters[id]}\n")
-                print(f"Decrease by {amount[0]} and counter is now: {current_connection_counters[id]}")
+                print(f"Decrease by {amount[0]} and counter for id - {id} is now: {current_connection_counters[id]}")
         i+=1
         if i < final:
             time.sleep(delay)
@@ -191,7 +191,7 @@ def handle_client(conn, addr):
     """    
 
     key = exchange_key(conn)
-    print(f"New Connection {addr}")   
+    print(f"\nNew Connection {addr}\n")   
     while True:
         message = mf.receive_decrypt(conn, key)
         if message == DISCONNECT:
@@ -203,7 +203,7 @@ def handle_client(conn, addr):
                 mf.encrypt_send("Message Received!", conn, key)
             else:
                 mf.encrypt_send("Incorrect data and/or data format, please try again.", conn, key)
-    print(f"Connection closed {addr}")
+    print(f"\nConnection closed {addr}\n")
     conn.close()
 
 
