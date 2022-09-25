@@ -25,7 +25,7 @@ SCHEMA = Schema({
 
 
 def validate_actions(json_str: str):
-    """ Validates the data that was send to the server. Checks especially if the actions are in the right format
+    """ Validates the data that was sent to the server. Checks especially if the actions are in the right format
 
     Args:
         json_str (str): The Json data as a string
@@ -63,13 +63,13 @@ def exchange_key(conn):
         conn (socket): The socket that tries to connect
 
     Returns:
-        key: The fern key
+        key: The fernet key
     """    
-    public_key = (G**PRIVATE_VALUE) % P
-    mf.encode_message(str(public_key), conn)
-    server_public_key = int(mf.decode_message(conn))
-    private_key = (server_public_key**PRIVATE_VALUE) % P
-    return fern(base64.urlsafe_b64encode((private_key).to_bytes(32, byteorder="big"))) # add to message formatting, to allow for sending encrypted messages, decrypting encrypted messages
+    public_key = (G**PRIVATE_VALUE) % P # Create the public part to be exchanged.
+    mf.encode_message(str(public_key), conn) # Send to client.
+    server_public_key = int(mf.decode_message(conn))  # Receive public part from client.
+    private_key = (server_public_key**PRIVATE_VALUE) % P # Create the private key using public client part and private value.
+    return fern(base64.urlsafe_b64encode((private_key).to_bytes(32, byteorder="big"))) # Return a fernet key generated from the private key.
 
 
 def handle_actions(id: str, actions: list, delay: int):
@@ -88,14 +88,14 @@ def handle_actions(id: str, actions: list, delay: int):
             with conn_details_lock:
                 current_connection_counters[id] += amount[0]
                 with open("logfile.txt", "a") as logfile:
-                    logfile.write(f"{id},INCREASE {amount[0]},{current_connection_counters[id]}\n")
+                    logfile.write(f"{id}\t\tINCREASE {amount[0]}\t\t{current_connection_counters[id]}\n")
                 print(f"Increase by {amount[0]} and counter is now: {current_connection_counters[id]}")
         elif "DECREASE" in action:
             amount = [int(s) for s in action.split() if s.isdigit()]
             with conn_details_lock:
                 current_connection_counters[id] -= amount[0]
                 with open("logfile.txt", "a") as logfile:
-                    logfile.write(f"{id},DECREASE {amount[0]},{current_connection_counters[id]}\n")
+                    logfile.write(f"{id}\t\tDECREASE {amount[0]}\t\t{current_connection_counters[id]}\n")
                 print(f"Decrease by {amount[0]} and counter is now: {current_connection_counters[id]}")
         i+=1
         if i < final:
@@ -103,7 +103,7 @@ def handle_actions(id: str, actions: list, delay: int):
 
 
 def handle_json(msg: str, conn):
-    """ Handles the file that was send by the client.
+    """ Handles the file that was sent by the client.
 
     Args:
         msg (str): The message that the client sent
@@ -121,7 +121,7 @@ def handle_json(msg: str, conn):
         print(current_id_total)
         add_conn_details(id, password)
         with open("logfile.txt", "a") as logfile:
-            logfile.write(f"{id},Logged In,{current_connection_counters[id]}\n")
+            logfile.write(f"{id}\t\tLogged In\t\t{current_connection_counters[id]}\n")
         handle_actions(id, actions, delay)
         print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
     else:
@@ -130,14 +130,14 @@ def handle_json(msg: str, conn):
                 current_id_total[id] += 1
             print(current_id_total)
             with open("logfile.txt", "a") as logfile:
-                logfile.write(f"{id},Logged In,{current_connection_counters[id]}\n")
+                logfile.write(f"{id}\t\tLogged In\t\t{current_connection_counters[id]}\n")
             handle_actions(id, actions, delay)
             print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
         else:
             mf.encode_message("\nACCESS DENIED: Another user with same ID already logged in with different password...\n",conn)
 
     with open("logfile.txt", "a") as logfile:
-        logfile.write(f"{id},Logged Out,{current_connection_counters[id]}\n")
+        logfile.write(f"{id}\t\tLogged Out\t\t{current_connection_counters[id]}\n")
     remove_conn_details(id)
 
 
@@ -179,10 +179,7 @@ def check_password(password1: str, password2: str):
     Returns:
         bool: True if passwords match, False if not
     """    
-    if password1 == password2:
-        return True
-    else:
-        return False
+    return password1 == password2
 
 
 def handle_client(conn, addr):
@@ -218,7 +215,7 @@ def start_server():
     print(f"Server [{SERVER}:{PORT}] started.")
     open("logfile.txt", "w").close() # Clear logfile contents from last session
     with open("logfile.txt", "a") as logfile:
-        logfile.write("ID:,Action:,Counter Value:\n") # Add header
+        logfile.write("ID\t\t\tAction\t\t\tCounter Value:\n") # Add header
     while True:
         conn, addr = server.accept()
         thread = threading.Thread(target=handle_client, args=(conn, addr))

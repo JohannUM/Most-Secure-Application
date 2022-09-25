@@ -87,13 +87,13 @@ def exchange_key():
     """ Performs a Diffie Hellman key exchange with the server
 
     Returns:
-        key: The fern key
+        key: The fernet key
     """    
-    public_key = (G**PRIVATE_VALUE) % P
-    mf.encode_message(str(public_key), client)
-    server_public_key = int(mf.decode_message(client))
-    private_key = (server_public_key**PRIVATE_VALUE) % P
-    return fern(base64.urlsafe_b64encode((private_key).to_bytes(32, byteorder="big"))) # add to message formatting, to allow for sending encrypted messages
+    public_key = (G**PRIVATE_VALUE) % P # Create the public part to be exchanged.
+    mf.encode_message(str(public_key), client) # Send to server.
+    server_public_key = int(mf.decode_message(client)) # Receive public part from server.
+    private_key = (server_public_key**PRIVATE_VALUE) % P # Create the private key using public server part and private value.
+    return fern(base64.urlsafe_b64encode((private_key).to_bytes(32, byteorder="big"))) # Return a fernet key generated from the private key.
 
 
 def send_message(message: str):

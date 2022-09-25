@@ -1,14 +1,5 @@
-ID:,Action:,Counter Value:
-1234,Logged In,0
-1234,INCREASE 5,5
-1234,Logged Out,5
-1234,Logged In,0
-1234,INCREASE 5,5
-1234,DECREASE 3,2
-1234,Logged Out,2
-1234,Logged In,0
-1234,INCREASE 10,10
-1234,DECREASE 3,7
-1234,DECREASE 2,5
-1234,INCREASE 6,11
-1234,Logged Out,11
+ID			Action			Counter Value:
+1234		Logged In		0
+1234		INCREASE 5		5
+1234		DECREASE 3		2
+1234		Logged Out		2
