@@ -31,25 +31,25 @@ def validate_input(json_str: str):
 
     Returns:
         bool: True if format is correct, False if not
-    """    
+    """
     # check if json_str can be converted to dictionary data type
     try:
         json_dict = json.loads(json_str)
     except json.decoder.JSONDecodeError:
         return False
-    
+
     # check if json_dict follows SCHEMA
     try:
         SCHEMA.validate(json_dict)
     except SchemaError:
         return False
-    
+
     # check if [ip] is in correct format
     try:
         ipaddress.ip_address(json_dict['server']['ip'])
     except ValueError:
         return False
-    
+
     # check if [port] is in correct format
     if 1 <= int(json_dict['server']['port']) <= 65535:
         pass
@@ -66,13 +66,13 @@ def connect(json_str: str):
         json_str (str): The JSON data formatted as a string
 
     Returns:
-        bool: True if connection was succesful, False if not
-    """    
+        bool: True if connection was successful, False if not
+    """
     if validate_input(json_str):
         json_dict = json.loads(json_str)
         try:
             client.connect((json_dict['server']['ip'], int(json_dict['server']['port'])))
-            global key 
+            global key
             key = exchange_key()
         except TimeoutError:
             print("Incorrect server ip and/or port, please try again.\n")
@@ -88,12 +88,12 @@ def exchange_key():
 
     Returns:
         key: The fernet key
-    """    
-    public_key = (G**PRIVATE_VALUE) % P # Create the public part to be exchanged.
-    mf.encode_message(str(public_key), client) # Send to server.
-    server_public_key = int(mf.decode_message(client)) # Receive public part from server.
-    private_key = (server_public_key**PRIVATE_VALUE) % P # Create the private key using public server part and private value.
-    return fern(base64.urlsafe_b64encode((private_key).to_bytes(32, byteorder="big"))) # Return a fernet key generated from the private key.
+    """
+    public_key = (G**PRIVATE_VALUE) % P  # Create the public part to be exchanged.
+    mf.encode_message(str(public_key), client)  # Send to server.
+    server_public_key = int(mf.decode_message(client))  # Receive public part from server.
+    private_key = (server_public_key**PRIVATE_VALUE) % P  # Create the private key using public server part and private value.
+    return fern(base64.urlsafe_b64encode(private_key.to_bytes(32, byteorder="big")))  # Return a fernet key generated from the private key.
 
 
 def send_message(message: str):
@@ -101,7 +101,7 @@ def send_message(message: str):
 
     Args:
         message (str): The JSON data formatted as a string
-    """    
+    """
     mf.encode_message(message, client)
     print(mf.decode_message(client))
 
@@ -111,7 +111,7 @@ def send_message_encrypt(message: str):
 
     Args:
         message (str): The JSON data formatted as a string
-    """    
+    """
 
     mf.encrypt_send(message, client, key)
     print(mf.receive_decrypt(client, key))
@@ -122,7 +122,7 @@ def collect_client_input():
 
     Returns:
         str: A JSON file formatted as a string
-    """    
+    """
 
     id = input("Enter your ID: ")
     password = input("Enter your password: ")
@@ -157,7 +157,7 @@ def collect_client_file():
 
     Returns:
         str: A JSON file formatted as a string
-    """   
+    """
 
     while True:
         file_name = input("Enter filename: ")
@@ -186,7 +186,7 @@ def choice(connected: bool):
 
     Returns:
         bool: True if connection could be established, False if not
-    """    
+    """
 
     input_choice = input("How would you like to input your data?\n [1] by hand\n [2] JSON file\n [0] to quit\n")
     if input_choice == "0":
@@ -222,8 +222,8 @@ if __name__ == "__main__":
     # Get input from user, validate the address and send the message as a json
     connected = choice(False)
 
-    # If the cliet was able to establish a connection send the disconnect message to the server
+    # If the client was able to establish a connection send the disconnect message to the server
     if connected:
-        mf.encrypt_send(DISCONNECT, client, key) 
+        mf.encrypt_send(DISCONNECT, client, key)
 
-    
+

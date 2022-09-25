@@ -9,7 +9,6 @@ import json
 import time
 import re
 
-
 SCHEMA = Schema({
     'id': str,
     'password': str,
@@ -32,19 +31,19 @@ def validate_actions(json_str: str):
 
     Returns:
         bool: True if the data is valid, False if not
-    """    
+    """
     # check if json_str can be converted to dictionary data type
     try:
         json_dict = json.loads(json_str)
     except json.decoder.JSONDecodeError:
         return False
-    
+
     # check if json_dict follows SCHEMA
     try:
         SCHEMA.validate(json_dict)
     except SchemaError:
         return False
-    
+
     # check if [steps] are in correct format
     for step in json_dict['actions']['steps']:
         try:
@@ -64,12 +63,12 @@ def exchange_key(conn):
 
     Returns:
         key: The fernet key
-    """    
-    public_key = (G**PRIVATE_VALUE) % P # Create the public part to be exchanged.
-    mf.encode_message(str(public_key), conn) # Send to client.
+    """
+    public_key = (G ** PRIVATE_VALUE) % P  # Create the public part to be exchanged.
+    mf.encode_message(str(public_key), conn)  # Send to client.
     server_public_key = int(mf.decode_message(conn))  # Receive public part from client.
-    private_key = (server_public_key**PRIVATE_VALUE) % P # Create the private key using public client part and private value.
-    return fern(base64.urlsafe_b64encode((private_key).to_bytes(32, byteorder="big"))) # Return a fernet key generated from the private key.
+    private_key = (server_public_key ** PRIVATE_VALUE) % P  # Create the private key using public client part and private value.
+    return fern(base64.urlsafe_b64encode(private_key.to_bytes(32, byteorder="big")))  # Return a fernet key generated from the private key.
 
 
 def handle_actions(id: str, actions: list, delay: int):
@@ -79,7 +78,7 @@ def handle_actions(id: str, actions: list, delay: int):
         id (str): The id of the client
         actions (str): The actions that the client wants to perform. E.g. "Increase 5"
         delay (int): The delay between 2 actions
-    """    
+    """
     i = 0
     final = len(actions)
     for action in actions:
@@ -97,7 +96,7 @@ def handle_actions(id: str, actions: list, delay: int):
                 with open("logfile.txt", "a") as logfile:
                     logfile.write(f"{id}\t\tDECREASE {amount[0]}\t\t{current_connection_counters[id]}\n")
                 print(f"Decrease by {amount[0]} and counter for id - {id} is now: {current_connection_counters[id]}")
-        i+=1
+        i += 1
         if i < final:
             time.sleep(delay)
 
@@ -108,7 +107,7 @@ def handle_json(msg: str, conn):
     Args:
         msg (str): The message that the client sent
         conn (socket): The socket of the client
-    """    
+    """
     data = json.loads(msg)
     id = data["id"]
     password = data["password"]
@@ -118,23 +117,24 @@ def handle_json(msg: str, conn):
     if id not in current_connection_passwords:
         with id_total_lock:
             current_id_total[id] = 1
-        #print(current_id_total)
+        # print(current_id_total)
         add_conn_details(id, password)
         with open("logfile.txt", "a") as logfile:
             logfile.write(f"{id}\t\tLogged In\t\t{current_connection_counters[id]}\n")
         handle_actions(id, actions, delay)
-        #print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
+        # print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
     else:
         if check_password(current_connection_passwords[id], password):
             with id_total_lock:
                 current_id_total[id] += 1
-            #print(current_id_total)
+            # print(current_id_total)
             with open("logfile.txt", "a") as logfile:
                 logfile.write(f"{id}\t\tLogged In\t\t{current_connection_counters[id]}\n")
             handle_actions(id, actions, delay)
-            #print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
+            # print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
         else:
-            mf.encode_message("\nACCESS DENIED: Another user with same ID already logged in with different password...\n",conn)
+            mf.encode_message(
+                "\nACCESS DENIED: Another user with same ID already logged in with different password...\n", conn)
 
     with open("logfile.txt", "a") as logfile:
         logfile.write(f"{id}\t\tLogged Out\t\t{current_connection_counters[id]}\n")
@@ -147,7 +147,7 @@ def add_conn_details(id: str, password: str):
     Args:
         id (str): The id of the client
         password (str): The password of the client
-    """    
+    """
     current_connection_passwords[id] = password
     current_connection_counters[id] = 0
 
@@ -157,7 +157,7 @@ def remove_conn_details(id: str):
 
     Args:
         id (str): The id of the client
-    """    
+    """
     global current_id_total
     with id_total_lock:
         if current_id_total[id]:
@@ -178,7 +178,7 @@ def check_password(password1: str, password2: str):
 
     Returns:
         bool: True if passwords match, False if not
-    """    
+    """
     return password1 == password2
 
 
@@ -188,16 +188,16 @@ def handle_client(conn, addr):
     Args:
         conn (socket): The socket of the client
         addr (tuple): The address details of the client
-    """    
+    """
 
     key = exchange_key(conn)
-    print(f"\nNew Connection {addr}\n")   
+    print(f"\nNew Connection {addr}\n")
     while True:
         message = mf.receive_decrypt(conn, key)
         if message == DISCONNECT:
             break
         elif message != "":
-            #print(f"{addr}: {message}")
+            # print(f"{addr}: {message}")
             if validate_actions(message):
                 handle_json(message, conn)
                 mf.encrypt_send("Message Received!", conn, key)
@@ -209,13 +209,13 @@ def handle_client(conn, addr):
 
 def start_server():
     """ Starts the server
-    """    
+    """
 
     server.listen()
     print(f"Server [{SERVER}:{PORT}] started.")
-    open("logfile.txt", "w").close() # Clear logfile contents from last session
+    open("logfile.txt", "w").close()  # Clear logfile contents from last session
     with open("logfile.txt", "a") as logfile:
-        logfile.write("ID\t\t\tAction\t\t\tCounter Value:\n") # Add header
+        logfile.write("ID\t\t\tAction\t\t\tCounter Value:\n")  # Add header
     while True:
         conn, addr = server.accept()
         thread = threading.Thread(target=handle_client, args=(conn, addr))
@@ -223,13 +223,12 @@ def start_server():
 
 
 if __name__ == "__main__":
-    
     PORT = 5050
     SERVER = "127.0.0.1"
     ADDR = (SERVER, PORT)
     DISCONNECT = "Sock It"
-    PRIVATE_VALUE = randint(1, 10000) # Private value, random for every new client
-    G = 6143 # Public values
+    PRIVATE_VALUE = randint(1, 10000)  # Private value, random for every new client
+    G = 6143  # Public values
     P = 7919
 
     current_connection_passwords = {}
