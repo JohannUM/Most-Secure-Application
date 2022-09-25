@@ -98,6 +98,8 @@ def handle_actions(id: str, actions: list, delay: int):
                 print(f"Decrease by {amount[0]} and counter for id - {id} is now: {current_connection_counters[id]}")
         i += 1
         if i < final:
+            if delay > 1000000: # Stop conversion error with big delays
+                delay = 1000000
             time.sleep(delay)
 
 
