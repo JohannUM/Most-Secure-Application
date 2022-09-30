@@ -74,7 +74,7 @@ def connect(json_str: str):
             client.connect((json_dict['server']['ip'], int(json_dict['server']['port'])))
             global key
             key = exchange_key()
-        except TimeoutError:
+        except (TimeoutError, ConnectionRefusedError):
             print("Incorrect server ip and/or port, please try again.\n")
             return False
         return True
