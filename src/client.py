@@ -1,3 +1,4 @@
+import tkinter
 from tkinter import filedialog
 from cryptography.fernet import Fernet as fern
 from required import messageFormating as mf
@@ -161,30 +162,19 @@ def collect_client_file():
         str: A JSON file formatted as a string
     """
 
-    while True:
+    root = tkinter.Tk()
+    root.attributes("-topmost", True)
+    root.withdraw()
+    filename = filedialog.askopenfilename(
+        initialdir="../data",
+        filetypes=[("Json File", "*.json")],
+        title="Select a File"
+    )
 
-        filename = filedialog.askopenfilename(
-            initialdir="../data",
-            filetypes=[("Json File", "*.json")],
-            title="Select a File"
-        )
+    file = open(filename)
+    data = json.load(file)
+    file.close()
 
-        file_name = filename
-        try:
-            file = open(file_name)
-            try:
-                data = json.load(file)
-                file.close()
-                break
-            except json.decoder.JSONDecodeError:
-                print("File cannot be read. It seems to not follow the JSON structure. Please try again.")
-                file.close()
-        except FileNotFoundError:
-            print("File does not exist. Please try again.")
-            break
-        except PermissionError:
-            print("File does not exist. Please try again.")
-            break
     return json.dumps(data)
 
 
@@ -212,11 +202,14 @@ def choice(connected: bool):
         else:
             choice(False)
     elif input_choice == "2":
-        json_data = collect_client_file()
-        if connect(json_data):
-            send_message_encrypt(json_data)
-            connected = True
-        else:
+        try:
+            json_data = collect_client_file()
+            if connect(json_data):
+                send_message_encrypt(json_data)
+                connected = True
+            else:
+                choice(False)
+        except FileNotFoundError:
             choice(False)
     else:
         print(f"{input_choice} is not 0/1/2, try again!")
