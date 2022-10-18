@@ -1,0 +1,16 @@
+{
+    "id": "1234",
+    "password": "12345",
+    "server": {
+        "ip": "127.0.0.1",
+        "port": "5050"
+    },
+    "actions": {
+        "delay": "2",
+        "steps": [
+            "INCREASE 5.2",
+            "INCREASE 7.2",
+            "DECREASE 9.2"
+        ]
+    }
+}

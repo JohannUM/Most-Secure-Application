@@ -1,5 +1,0 @@
-ID			Action			Counter Value:
-1234		Logged In		0
-1234		INCREASE 5		5
-1234		DECREASE 3		2
-1234		Logged Out		2

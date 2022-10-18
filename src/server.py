@@ -1,3 +1,4 @@
+from decimal import Decimal
 from cryptography.fernet import Fernet as fern
 from required import messageFormating as mf
 from schema import Schema, Use, SchemaError
@@ -76,31 +77,30 @@ def handle_actions(id: str, actions: list, delay: int):
 
     Args:
         id (str): The id of the client
-        actions (str): The actions that the client wants to perform. E.g. "Increase 5"
+        actions (list): The actions that the client wants to perform. E.g. "Increase 5"
         delay (int): The delay between 2 actions
     """
     i = 0
     final = len(actions)
     for action in actions:
         if "INCREASE" in action:
-            amount = [int(s) for s in action.split() if s.isdigit()]
+            amount = re.findall(r"[-+]?(?:\d*\.\d+|\d+)", action)
             with conn_details_lock:
-                current_connection_counters[id] += amount[0]
+                current_connection_counters[id] += Decimal(amount[0])
                 with open("logfile.txt", "a") as logfile:
                     logfile.write(f"{id}\t\tINCREASE {amount[0]}\t\t{current_connection_counters[id]}\n")
-                print(f"Increase by {amount[0]} and counter for id - {id} is now: {current_connection_counters[id]}")
+                print(f"Increase by {amount[0]} and counter for id {id} is now: {current_connection_counters[id]}")
         elif "DECREASE" in action:
-            amount = [int(s) for s in action.split() if s.isdigit()]
+            amount = re.findall(r"[-+]?(?:\d*\.\d+|\d+)", action)
             with conn_details_lock:
-                current_connection_counters[id] -= amount[0]
+                current_connection_counters[id] -= Decimal(amount[0])
                 with open("logfile.txt", "a") as logfile:
                     logfile.write(f"{id}\t\tDECREASE {amount[0]}\t\t{current_connection_counters[id]}\n")
-                print(f"Decrease by {amount[0]} and counter for id - {id} is now: {current_connection_counters[id]}")
+                print(f"Decrease by {amount[0]} and counter for id {id} is now: {current_connection_counters[id]}")
         i += 1
         if i < final:
-            if delay > 1000000: # Stop conversion error with big delays
-                delay = 1000000
-            time.sleep(delay)
+            if delay > 1000000 or delay < -1000000:
+                time.sleep(delay)
 
 
 def handle_json(msg: str, conn):

@@ -1,0 +1,14 @@
+{
+    "id": "1234",
+    "password": "verysafepassword1234",
+    "server": {
+        "ip": "127.0.0.1",
+        "port": "5050"
+    },
+    "actions": {
+        "delay": "1",
+        "steps": [
+            "INCREASE 5",
+            "DECREASE 3"
+        ]
+    }
