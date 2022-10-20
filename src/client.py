@@ -1,3 +1,6 @@
+import sys
+import tkinter
+from tkinter import filedialog
 from cryptography.fernet import Fernet as fern
 from required import messageFormating as mf
 from schema import Schema, Use, SchemaError
@@ -6,7 +9,6 @@ import ipaddress
 import socket
 import base64
 import json
-
 
 # The correct schema of the json data
 SCHEMA = Schema({
@@ -75,11 +77,12 @@ def connect(json_str: str):
             global key
             key = exchange_key()
         except (TimeoutError, ConnectionRefusedError):
-            print("Incorrect server ip and/or port, please try again.\n")
+            sys.exit("Incorrect server ip and/or port, please try again.\n")
+
             return False
         return True
     else:
-        print("Incorrect data and/or data format, please try again.\n")
+        sys.exit("Incorrect data and/or data format, please try again.\n")
         return False
 
 
@@ -89,11 +92,13 @@ def exchange_key():
     Returns:
         key: The fernet key
     """
-    public_key = (G**PRIVATE_VALUE) % P  # Create the public part to be exchanged.
+    public_key = (G ** PRIVATE_VALUE) % P  # Create the public part to be exchanged.
     mf.encode_message(str(public_key), client)  # Send to server.
     server_public_key = int(mf.decode_message(client))  # Receive public part from server.
-    private_key = (server_public_key**PRIVATE_VALUE) % P  # Create the private key using public server part and private value.
-    return fern(base64.urlsafe_b64encode(private_key.to_bytes(32, byteorder="big")))  # Return a fernet key generated from the private key.
+    private_key = (
+                              server_public_key ** PRIVATE_VALUE) % P  # Create the private key using public server part and private value.
+    return fern(base64.urlsafe_b64encode(
+        private_key.to_bytes(32, byteorder="big")))  # Return a fernet key generated from the private key.
 
 
 def send_message(message: str):
@@ -159,19 +164,22 @@ def collect_client_file():
         str: A JSON file formatted as a string
     """
 
-    while True:
-        file_name = input("Enter filename: ")
-        try:
-            file = open("../data/" + file_name)
-            try:
-                data = json.load(file)
-                file.close()
-                break
-            except json.decoder.JSONDecodeError:
-                print(f"data/{file_name} cannot be read. It seems to not follow the JSON structure. Please try again.")
-                file.close()
-        except FileNotFoundError:
-            print(f"data/{file_name} does not exist. Please try again.")
+    root = tkinter.Tk()
+    root.attributes("-topmost", True)
+    root.withdraw()
+    filename = filedialog.askopenfilename(
+        initialdir="../data",
+        filetypes=[("Json File", "*.json")],
+        title="Select a File"
+    )
+
+    file = open(filename)
+    try:    # TODO workaround that will be chagned when updating the validation checks
+        data = json.load(file)
+    except json.decoder.JSONDecodeError:
+        sys.exit("The file does not follow the .json strucutre.")
+    file.close()
+
     return json.dumps(data)
 
 
@@ -199,11 +207,14 @@ def choice(connected: bool):
         else:
             choice(False)
     elif input_choice == "2":
-        json_data = collect_client_file()
-        if connect(json_data):
-            send_message_encrypt(json_data)
-            connected = True
-        else:
+        try:
+            json_data = collect_client_file()
+            if connect(json_data):
+                send_message_encrypt(json_data)
+                connected = True
+            else:
+                choice(False)
+        except FileNotFoundError:
             choice(False)
     else:
         print(f"{input_choice} is not 0/1/2, try again!")
@@ -214,8 +225,8 @@ def choice(connected: bool):
 if __name__ == "__main__":
     # objects    
     DISCONNECT = "Sock It"
-    PRIVATE_VALUE = randint(1, 10000) # Private value, random for every new client
-    G = 6143 # Public values
+    PRIVATE_VALUE = randint(1, 10000)  # Private value, random for every new client
+    G = 6143  # Public values
     P = 7919
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -225,5 +236,3 @@ if __name__ == "__main__":
     # If the client was able to establish a connection send the disconnect message to the server
     if connected:
         mf.encrypt_send(DISCONNECT, client, key)
-
-
