@@ -1,3 +1,4 @@
+import sys
 import tkinter
 from tkinter import filedialog
 from cryptography.fernet import Fernet as fern
@@ -76,11 +77,12 @@ def connect(json_str: str):
             global key
             key = exchange_key()
         except (TimeoutError, ConnectionRefusedError):
-            print("Incorrect server ip and/or port, please try again.\n")
+            sys.exit("Incorrect server ip and/or port, please try again.\n")
+
             return False
         return True
     else:
-        print("Incorrect data and/or data format, please try again.\n")
+        sys.exit("Incorrect data and/or data format, please try again.\n")
         return False
 
 
@@ -172,7 +174,10 @@ def collect_client_file():
     )
 
     file = open(filename)
-    data = json.load(file)
+    try:    # TODO workaround that will be chagned when updating the validation checks
+        data = json.load(file)
+    except json.decoder.JSONDecodeError:
+        sys.exit("The file does not follow the .json strucutre.")
     file.close()
 
     return json.dumps(data)
