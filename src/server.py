@@ -10,51 +10,6 @@ import json
 import time
 import re
 
-SCHEMA = Schema({
-    'id': str,
-    'password': str,
-    'server': {
-        'ip': str,
-        'port': Use(int),
-    },
-    'actions': {
-        'delay': Use(int),
-        'steps': list
-    }
-})
-
-
-def validate_actions(json_str: str):
-    """ Validates the data that was sent to the server. Checks especially if the actions are in the right format
-
-    Args:
-        json_str (str): The Json data as a string
-
-    Returns:
-        bool: True if the data is valid, False if not
-    """
-    # check if json_str can be converted to dictionary data type
-    try:
-        json_dict = json.loads(json_str)
-    except json.decoder.JSONDecodeError:
-        return False
-
-    # check if json_dict follows SCHEMA
-    try:
-        SCHEMA.validate(json_dict)
-    except SchemaError:
-        return False
-
-    # check if [steps] are in correct format
-    for step in json_dict['actions']['steps']:
-        try:
-            if re.compile('INCREASE \\d').match(step) is None and re.compile('DECREASE \\d').match(step) is None:
-                return False
-        except TypeError:
-            return False
-
-    return True
-
 
 def exchange_key(conn):
     """Performs a Diffie Hellman key exchange
@@ -200,11 +155,8 @@ def handle_client(conn, addr):
             break
         elif message != "":
             # print(f"{addr}: {message}")
-            if validate_actions(message):
-                handle_json(message, conn)
-                mf.encrypt_send("Message Received!", conn, key)
-            else:
-                mf.encrypt_send("Incorrect data and/or data format, please try again.", conn, key)
+            handle_json(message, conn)
+            mf.encrypt_send("Message Received!", conn, key)
     print(f"\nConnection closed {addr}\n")
     conn.close()
 
