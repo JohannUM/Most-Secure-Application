@@ -3,62 +3,11 @@ import tkinter
 from tkinter import filedialog
 from cryptography.fernet import Fernet as fern
 from required import messageFormating as mf
-from schema import Schema, Use, SchemaError
+from required import validation as val
 from random import randint
-import ipaddress
 import socket
 import base64
 import json
-
-# The correct schema of the json data
-SCHEMA = Schema({
-    'id': str,
-    'password': str,
-    'server': {
-        'ip': str,
-        'port': Use(int),
-    },
-    'actions': {
-        'delay': Use(int),
-        'steps': list
-    }
-})
-
-
-def validate_input(json_str: str):
-    """Validates the input by the user. Checks if json format is correct and if the ip and the port have the correct format
-
-    Args:
-        json_str (str): The JSON data as a string
-
-    Returns:
-        bool: True if format is correct, False if not
-    """
-    # check if json_str can be converted to dictionary data type
-    try:
-        json_dict = json.loads(json_str)
-    except json.decoder.JSONDecodeError:
-        return False
-
-    # check if json_dict follows SCHEMA
-    try:
-        SCHEMA.validate(json_dict)
-    except SchemaError:
-        return False
-
-    # check if [ip] is in correct format
-    try:
-        ipaddress.ip_address(json_dict['server']['ip'])
-    except ValueError:
-        return False
-
-    # check if [port] is in correct format
-    if 1 <= int(json_dict['server']['port']) <= 65535:
-        pass
-    else:
-        return False
-
-    return True
 
 
 def connect(json_str: str):
@@ -70,19 +19,18 @@ def connect(json_str: str):
     Returns:
         bool: True if connection was successful, False if not
     """
-    if validate_input(json_str):
+    if val.validate_data(json_str):
         json_dict = json.loads(json_str)
         try:
             client.connect((json_dict['server']['ip'], int(json_dict['server']['port'])))
             global key
             key = exchange_key()
         except (TimeoutError, ConnectionRefusedError):
-            sys.exit("Incorrect server ip and/or port, please try again.\n")
-
+            sys.exit("INVALID INPUT: incorrect server ip and/or port.")
             return False
         return True
     else:
-        sys.exit("Incorrect data and/or data format, please try again.\n")
+        sys.exit()
         return False
 
 
@@ -173,14 +121,10 @@ def collect_client_file():
         title="Select a File"
     )
 
-    file = open(filename)
-    try:    # TODO workaround that will be chagned when updating the validation checks
-        data = json.load(file)
-    except json.decoder.JSONDecodeError:
-        sys.exit("The file does not follow the .json strucutre.")
-    file.close()
-
-    return json.dumps(data)
+    with open(filename, 'r') as file:
+        json_str = file.read()
+    
+    return json_str
 
 
 def choice(connected: bool):
