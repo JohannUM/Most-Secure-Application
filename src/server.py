@@ -1,6 +1,7 @@
 from decimal import Decimal
 from cryptography.fernet import Fernet as fern
 from required import messageFormating as mf
+from required import validation as val
 from random import randint
 import socket
 import threading
@@ -77,7 +78,8 @@ def handle_json(msg: str, conn):
         add_conn_details(id, password)
         with open("logfile.txt", "a") as logfile:
             logfile.write(f"{id}\t\tLogged In\t\t{current_connection_counters[id]}\n")
-        handle_actions(id, actions, delay)
+        if val.validate_data(msg):
+            handle_actions(id, actions, delay)
         # print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
     else:
         if check_password(current_connection_passwords[id], password):
