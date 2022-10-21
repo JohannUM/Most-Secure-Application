@@ -120,6 +120,8 @@ def collect_client_file():
         filetypes=[("Json File", "*.json")],
         title="Select a File"
     )
+    if filename == "":
+        sys.exit("INVALID INPUT: no file was selected.")
 
     with open(filename, 'r') as file:
         json_str = file.read()
