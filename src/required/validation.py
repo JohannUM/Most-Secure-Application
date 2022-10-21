@@ -1,4 +1,4 @@
-from jsonschema import validate, SchemaError, ValidationError
+from jsonschema import validate, ValidationError
 import json
 
 SCHEMA = {

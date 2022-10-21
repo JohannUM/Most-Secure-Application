@@ -1,7 +1,6 @@
 from decimal import Decimal
 from cryptography.fernet import Fernet as fern
 from required import messageFormating as mf
-from schema import Schema, Use, SchemaError
 from random import randint
 import socket
 import threading

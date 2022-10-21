@@ -4,9 +4,7 @@ from tkinter import filedialog
 from cryptography.fernet import Fernet as fern
 from required import messageFormating as mf
 from required import validation as val
-from schema import Schema, Use, SchemaError
 from random import randint
-import ipaddress
 import socket
 import base64
 import json
