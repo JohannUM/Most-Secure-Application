@@ -1,7 +1,7 @@
 from decimal import Decimal
 from cryptography.fernet import Fernet as fern
 from required import messageFormating as mf
-from schema import Schema, Use, SchemaError
+from required import validation as val
 from random import randint
 import socket
 import threading
@@ -9,51 +9,6 @@ import base64
 import json
 import time
 import re
-
-SCHEMA = Schema({
-    'id': str,
-    'password': str,
-    'server': {
-        'ip': str,
-        'port': Use(int),
-    },
-    'actions': {
-        'delay': Use(int),
-        'steps': list
-    }
-})
-
-
-def validate_actions(json_str: str):
-    """ Validates the data that was sent to the server. Checks especially if the actions are in the right format
-
-    Args:
-        json_str (str): The Json data as a string
-
-    Returns:
-        bool: True if the data is valid, False if not
-    """
-    # check if json_str can be converted to dictionary data type
-    try:
-        json_dict = json.loads(json_str)
-    except json.decoder.JSONDecodeError:
-        return False
-
-    # check if json_dict follows SCHEMA
-    try:
-        SCHEMA.validate(json_dict)
-    except SchemaError:
-        return False
-
-    # check if [steps] are in correct format
-    for step in json_dict['actions']['steps']:
-        try:
-            if re.compile('INCREASE \\d').match(step) is None and re.compile('DECREASE \\d').match(step) is None:
-                return False
-        except TypeError:
-            return False
-
-    return True
 
 
 def exchange_key(conn):
@@ -123,7 +78,8 @@ def handle_json(msg: str, conn):
         add_conn_details(id, password)
         with open("logfile.txt", "a") as logfile:
             logfile.write(f"{id}\t\tLogged In\t\t{current_connection_counters[id]}\n")
-        handle_actions(id, actions, delay)
+        if val.validate_data(msg):
+            handle_actions(id, actions, delay)
         # print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
     else:
         if check_password(current_connection_passwords[id], password):
@@ -200,11 +156,8 @@ def handle_client(conn, addr):
             break
         elif message != "":
             # print(f"{addr}: {message}")
-            if validate_actions(str(message)):
-                handle_json(str(message), conn)
-                mf.encrypt_send("Message Received!", conn, key)
-            else:
-                mf.encrypt_send("Incorrect data and/or data format, please try again.", conn, key)
+            handle_json(message, conn)
+            mf.encrypt_send("Message Received!", conn, key)
     print(f"\nConnection closed {addr}\n")
     conn.close()
 

@@ -1,62 +1,13 @@
+import sys
+import tkinter
+from tkinter import filedialog
 from cryptography.fernet import Fernet as fern
 from required import messageFormating as mf
-from schema import Schema, Use, SchemaError
+from required import validation as val
 from random import randint
-import ipaddress
 import socket
 import base64
 import json
-
-
-# The correct schema of the json data
-SCHEMA = Schema({
-    'id': str,
-    'password': str,
-    'server': {
-        'ip': str,
-        'port': Use(int),
-    },
-    'actions': {
-        'delay': Use(int),
-        'steps': list
-    }
-})
-
-
-def validate_input(json_str: str):
-    """Validates the input by the user. Checks if json format is correct and if the ip and the port have the correct format
-
-    Args:
-        json_str (str): The JSON data as a string
-
-    Returns:
-        bool: True if format is correct, False if not
-    """
-    # check if json_str can be converted to dictionary data type
-    try:
-        json_dict = json.loads(json_str)
-    except json.decoder.JSONDecodeError:
-        return False
-
-    # check if json_dict follows SCHEMA
-    try:
-        SCHEMA.validate(json_dict)
-    except SchemaError:
-        return False
-
-    # check if [ip] is in correct format
-    try:
-        ipaddress.ip_address(json_dict['server']['ip'])
-    except ValueError:
-        return False
-
-    # check if [port] is in correct format
-    if 1 <= int(json_dict['server']['port']) <= 65535:
-        pass
-    else:
-        return False
-
-    return True
 
 
 def connect(json_str: str):
@@ -68,18 +19,18 @@ def connect(json_str: str):
     Returns:
         bool: True if connection was successful, False if not
     """
-    if validate_input(json_str):
+    if val.validate_data(json_str):
         json_dict = json.loads(json_str)
         try:
             client.connect((json_dict['server']['ip'], int(json_dict['server']['port'])))
             global key
             key = exchange_key()
         except (TimeoutError, ConnectionRefusedError):
-            print("Incorrect server ip and/or port, please try again.\n")
+            sys.exit("INVALID INPUT: incorrect server ip and/or port.")
             return False
         return True
     else:
-        print("Incorrect data and/or data format, please try again.\n")
+        sys.exit()
         return False
 
 
@@ -89,7 +40,7 @@ def exchange_key():
     Returns:
         key: The fernet key
     """
-    public_key = (G**PRIVATE_VALUE) % P  # Create the public part to be exchanged.
+    public_key = (G ** PRIVATE_VALUE) % P  # Create the public part to be exchanged.
     mf.encode_message(str(public_key), client)  # Send to server.
     server_public_key = int(mf.decode_message(client))  # Receive public part from server.
     private_key = (server_public_key**PRIVATE_VALUE) % P  # Create the private key using public server part and private value.
@@ -160,20 +111,21 @@ def collect_client_file():
         str: A JSON file formatted as a string
     """
 
-    while True:
-        file_name = input("Enter filename: ")
-        try:
-            file = open("../data/" + file_name)
-            try:
-                data = json.load(file)
-                file.close()
-                break
-            except json.decoder.JSONDecodeError:
-                print(f"data/{file_name} cannot be read. It seems to not follow the JSON structure. Please try again.")
-                file.close()
-        except FileNotFoundError:
-            print(f"data/{file_name} does not exist. Please try again.")
-    return json.dumps(data)
+    root = tkinter.Tk()
+    root.attributes("-topmost", True)
+    root.withdraw()
+    filename = filedialog.askopenfilename(
+        initialdir="../data",
+        filetypes=[("Json File", "*.json")],
+        title="Select a File"
+    )
+    if filename == "":
+        sys.exit("INVALID INPUT: no file was selected.")
+
+    with open(filename, 'r') as file:
+        json_str = file.read()
+    
+    return json_str
 
 
 def choice(connected: bool):
@@ -200,11 +152,14 @@ def choice(connected: bool):
         else:
             choice(False)
     elif input_choice == "2":
-        json_data = collect_client_file()
-        if connect(json_data):
-            send_message_encrypt(json_data)
-            connected = True
-        else:
+        try:
+            json_data = collect_client_file()
+            if connect(json_data):
+                send_message_encrypt(json_data)
+                connected = True
+            else:
+                choice(False)
+        except FileNotFoundError:
             choice(False)
     else:
         print(f"{input_choice} is not 0/1/2, try again!")
@@ -215,8 +170,8 @@ def choice(connected: bool):
 if __name__ == "__main__":
     # objects    
     DISCONNECT = "Sock It"
-    PRIVATE_VALUE = randint(1, 10000) # Private value, random for every new client
-    G = 6143 # Public values
+    PRIVATE_VALUE = randint(1, 10000)  # Private value, random for every new client
+    G = 6143  # Public values
     P = 7919
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -226,5 +181,3 @@ if __name__ == "__main__":
     # If the client was able to establish a connection send the disconnect message to the server
     if connected:
         mf.encrypt_send(DISCONNECT, client, key)
-
-
