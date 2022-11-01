@@ -1,6 +1,6 @@
 {
     "id": "1234",
-    "password": "sd",
+    "password": "verysafepassword1234",
     "server": {
         "ip": "127.0.0.1",
         "port": "5050"

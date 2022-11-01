@@ -69,6 +69,7 @@ def exchange_key(conn):
     mf.encode_message(str(public_key), conn)  # Send to client.
     server_public_key = int(mf.decode_message(conn))  # Receive public part from client.
     private_key = (server_public_key ** PRIVATE_VALUE) % P  # Create the private key using public client part and private value.
+    print(private_key)
     return fern(base64.urlsafe_b64encode(private_key.to_bytes(32, byteorder="big")))  # Return a fernet key generated from the private key.
 
 
@@ -99,8 +100,7 @@ def handle_actions(id: str, actions: list, delay: int):
                 print(f"Decrease by {amount[0]} and counter for id {id} is now: {current_connection_counters[id]}")
         i += 1
         if i < final:
-            if delay > 1000000 or delay < -1000000:
-                time.sleep(delay)
+            time.sleep(delay)
 
 
 def handle_json(msg: str, conn):
@@ -200,8 +200,8 @@ def handle_client(conn, addr):
             break
         elif message != "":
             # print(f"{addr}: {message}")
-            if validate_actions(message):
-                handle_json(message, conn)
+            if validate_actions(str(message)):
+                handle_json(str(message), conn)
                 mf.encrypt_send("Message Received!", conn, key)
             else:
                 mf.encrypt_send("Incorrect data and/or data format, please try again.", conn, key)
