@@ -24,7 +24,7 @@ def exchange_key(conn):
     mf.encode_message(str(public_key), conn)  # Send to client.
     server_public_key = int(mf.decode_message(conn))  # Receive public part from client.
     private_key = (server_public_key ** PRIVATE_VALUE) % P  # Create the private key using public client part and private value.
-    return fern(base64.urlsafe_b64encode(private_key.to_bytes(32, byteorder="big")))  # Return a fernet key generated from the private key.
+    return private_key
 
 
 def handle_actions(id: str, actions: list, delay: int):
@@ -151,16 +151,16 @@ def handle_client(conn, addr):
     print(f"\nNew Connection {addr}\n")
     while True:
         try:
-            message = mf.receive_decrypt(conn, key)
+            message = mf.decrypt_receive(conn, key)
         except (ConnectionResetError):
-            print("Client refused to connect.")
+            print("Client connection refused - Incorrect Password.")
             break
         if message == DISCONNECT:
             break
         elif message != "":
             # print(f"{addr}: {message}")
             handle_json(message, conn)
-            mf.encrypt_send("Message Received!", conn, key)
+            mf.send_encrypted("Message Received!", conn, key)
     print(f"\nConnection closed {addr}\n")
     conn.close()
 
