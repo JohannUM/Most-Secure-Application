@@ -44,9 +44,8 @@ def exchange_key():
     mf.encode_message(str(public_key), client)  # Send to server.
     server_public_key = int(mf.decode_message(client))  # Receive public part from server.
     private_key = (server_public_key**PRIVATE_VALUE) % P  # Create the private key using public server part and private value.
-    print(private_key)
     return fern(base64.urlsafe_b64encode(private_key.to_bytes(32, byteorder="big")))  # Return a fernet key generated from the private key.
-
+    
 
 def send_message(message: str):
     """Sends a provided message to the server
