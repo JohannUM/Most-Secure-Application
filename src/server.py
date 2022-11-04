@@ -1,11 +1,9 @@
 from decimal import Decimal
-from cryptography.fernet import Fernet as fern
 from required import messageFormating as mf
 from required import validation as val
 from random import randint
 import socket
 import threading
-import base64
 import json
 import time
 import re
