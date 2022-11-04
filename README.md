@@ -11,3 +11,6 @@ This git repo contains code for secure client server communication through the p
 
 ### Requirements
 In order to use the application, please ensure the libraries mentioned in *requirements.txt* are installed in your environment.
+
+### Fix It phase report:
+You can find the pdf of our Fix It report in this repository.
