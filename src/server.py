@@ -24,7 +24,7 @@ def exchange_key(conn):
     mf.encode_message(str(public_key), conn)  # Send to client.
     server_public_key = int(mf.decode_message(conn))  # Receive public part from client.
     private_key = (server_public_key ** PRIVATE_VALUE) % P  # Create the private key using public client part and private value.
-    return fern(base64.urlsafe_b64encode(private_key.to_bytes(32, byteorder="big")))  # Return a fernet key generated from the private key.
+    return private_key
 
 
 def handle_actions(id: str, actions: list, delay: int):
@@ -54,8 +54,7 @@ def handle_actions(id: str, actions: list, delay: int):
                 print(f"Decrease by {amount[0]} and counter for id {id} is now: {current_connection_counters[id]}")
         i += 1
         if i < final:
-            if delay > 1000000 or delay < -1000000:
-                time.sleep(delay)
+            time.sleep(delay)
 
 
 def handle_json(msg: str, conn):
@@ -80,6 +79,7 @@ def handle_json(msg: str, conn):
             logfile.write(f"{id}\t\tLogged In\t\t{current_connection_counters[id]}\n")
         if val.validate_data(msg):
             handle_actions(id, actions, delay)
+        remove_conn_details(id)
         # print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
     else:
         if check_password(current_connection_passwords[id], password):
@@ -89,14 +89,11 @@ def handle_json(msg: str, conn):
             with open("logfile.txt", "a") as logfile:
                 logfile.write(f"{id}\t\tLogged In\t\t{current_connection_counters[id]}\n")
             handle_actions(id, actions, delay)
+            remove_conn_details(id)
             # print(f"ID : {id}\nPASSWORD : {password}\nACTIONS : {actions}\nDELAY : {delay}")
         else:
             mf.encode_message(
                 "\nACCESS DENIED: Another user with same ID already logged in with different password...\n", conn)
-
-    with open("logfile.txt", "a") as logfile:
-        logfile.write(f"{id}\t\tLogged Out\t\t{current_connection_counters[id]}\n")
-    remove_conn_details(id)
 
 
 def add_conn_details(id: str, password: str):
@@ -116,6 +113,8 @@ def remove_conn_details(id: str):
     Args:
         id (str): The id of the client
     """
+    with open("logfile.txt", "a") as logfile:
+        logfile.write(f"{id}\t\tLogged Out\t\t{current_connection_counters[id]}\n")
     global current_id_total
     with id_total_lock:
         if current_id_total[id]:
@@ -151,13 +150,17 @@ def handle_client(conn, addr):
     key = exchange_key(conn)
     print(f"\nNew Connection {addr}\n")
     while True:
-        message = mf.receive_decrypt(conn, key)
+        try:
+            message = mf.decrypt_receive(conn, key)
+        except (ConnectionResetError):
+            print("Client connection refused - Incorrect Password.")
+            break
         if message == DISCONNECT:
             break
         elif message != "":
             # print(f"{addr}: {message}")
             handle_json(message, conn)
-            mf.encrypt_send("Message Received!", conn, key)
+            mf.send_encrypted("Message Received!", conn, key)
     print(f"\nConnection closed {addr}\n")
     conn.close()
 

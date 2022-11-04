@@ -15,19 +15,25 @@ def decode_message(conn):
         msgLength = int(msgLength)
         message = conn.recv(msgLength).decode(FORMAT) # Decode actual message.
     return message
-    
-def encrypt_send(msg, conn, f_key):
-    encrypted = f_key.encrypt(msg.encode())
-    length = str(len(encrypted)).encode(FORMAT)
+
+def send_encrypted(msg, conn, key):
+    encrypted_msg = ""
+    for c in msg:
+        encrypted_msg += chr(ord(c) + key)
+    encrypted_msg = encrypted_msg.encode(FORMAT)
+    length = str(len(encrypted_msg)).encode(FORMAT)
     length += b' ' * (HEADER - len(length))
     conn.send(length)
-    conn.send(encrypted)
+    conn.send(encrypted_msg)
 
-def receive_decrypt(conn, f_key):
+def decrypt_receive(conn, key):
     length = conn.recv(HEADER).decode(FORMAT)
-    encryption = ""
+    encrypted_msg = ""
+    decrypted_msg = ""
     if length:
         length = int(length)
-        encryption = conn.recv(length)
-        return f_key.decrypt(encryption).decode()
+        encrypted_msg = conn.recv(length).decode(FORMAT)
+    for c in encrypted_msg:
+        decrypted_msg += chr(ord(c) - key)
+    return decrypted_msg
     

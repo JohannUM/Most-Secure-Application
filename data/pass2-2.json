@@ -1,6 +1,6 @@
 {
     "id": "1234",
-    "password": "verysafepassword1234",
+    "password": "verysafepassword",
     "server": {
         "ip": "127.0.0.1",
         "port": "5050"
@@ -8,7 +8,6 @@
     "actions": {
         "delay": "10",
         "steps": [
-            "INCREASE 5",
             "DECREASE 3",
             "DECREASE 2"
         ]
