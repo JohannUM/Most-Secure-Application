@@ -79,7 +79,7 @@ def validate_data(json_str):
             print(f"INVALID INPUT: \'{e.instance}\' is an invalid argument for field {e.json_path}.")
         return False
 
-    if float(json_data["actions"]["delay"]) > 1000000:
+    if int(json_data["actions"]["delay"]) > 1000000:
         return False
 
     for step in json_data["actions"]["steps"]:
