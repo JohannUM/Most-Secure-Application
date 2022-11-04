@@ -140,6 +140,26 @@ def test_negative_delay():
     assert validate_data(json.dumps(data)) is False
 
 
+def test_delay_too_large():
+    data = {
+        "id": "1234",
+        "password": "verysafepassword1234",
+        "server": {
+            "ip": "127.0.0.1",
+            "port": "5050"
+        },
+        "actions": {
+            "delay": "1000001",
+            "steps": [
+                "INCREASE 5",
+                "DECREASE 3"
+            ]
+        }
+    }
+
+    assert validate_data(json.dumps(data)) is False
+
+
 def test_invalid_step():
     data = {
         "id": "1234",
@@ -158,3 +178,43 @@ def test_invalid_step():
     }
 
     assert validate_data(json.dumps(data)) is False
+
+
+def test_step_too_large():
+    data = {
+        "id": "1234",
+        "password": "verysafepassword1234",
+        "server": {
+            "ip": "127.0.0.1",
+            "port": "5050"
+        },
+        "actions": {
+            "delay": "1",
+            "steps": [
+                "INCREASE 5",
+                "DECREASE 1000000000001"
+            ]
+        }
+    }
+
+    assert validate_data(json.dumps(data)) is False
+
+
+def test_decimal_step():
+    data = {
+        "id": "1234",
+        "password": "verysafepassword1234",
+        "server": {
+            "ip": "127.0.0.1",
+            "port": "5050"
+        },
+        "actions": {
+            "delay": "1",
+            "steps": [
+                "INCREASE 5",
+                "DECREASE 33.222222"
+            ]
+        }
+    }
+
+    assert validate_data(json.dumps(data)) is True

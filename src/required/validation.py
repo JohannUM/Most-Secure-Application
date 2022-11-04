@@ -35,14 +35,14 @@ SCHEMA = {
             "properties": {
                 "delay": {
                     "type": "string",
-                    "pattern": "^([0-9]{1,100})$"
+                    "pattern": "^([0-9]+)$"
                 },
                 "steps": {
                     "type": "array",
                     "items": [
                         {
                             "type": "string",
-                            "pattern": "^((INCREASE|DECREASE) -?[0-9]{0,10})$"
+                            "pattern": "^((INCREASE|DECREASE) [-+]?([0-9]{1,3}[,]?)?([0-9]{3}[,]?)*[.]?[0-9]*)$"
                         }
                     ]
                 }
@@ -78,5 +78,12 @@ def validate_data(json_str):
         else:
             print(f"INVALID INPUT: \'{e.instance}\' is an invalid argument for field {e.json_path}.")
         return False
+
+    if int(json_data["actions"]["delay"]) > 1000000:
+        return False
+
+    for step in json_data["actions"]["steps"]:
+        if float(step.split()[1])  > 1000000000000:
+            return False
 
     return True
