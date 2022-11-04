@@ -1,12 +1,10 @@
 import sys
 import tkinter
 from tkinter import filedialog
-from cryptography.fernet import Fernet as fern
 from required import messageFormating as mf
 from required import validation as val
 from random import randint
 import socket
-import base64
 import json
 
 
@@ -43,11 +41,9 @@ def exchange_key():
     public_key = (G ** PRIVATE_VALUE) % P  # Create the public part to be exchanged.
     mf.encode_message(str(public_key), client)  # Send to server.
     server_public_key = int(mf.decode_message(client))  # Receive public part from server.
-    private_key = (
-                              server_public_key ** PRIVATE_VALUE) % P  # Create the private key using public server part and private value.
-    return fern(base64.urlsafe_b64encode(
-        private_key.to_bytes(32, byteorder="big")))  # Return a fernet key generated from the private key.
-
+    private_key = (server_public_key**PRIVATE_VALUE) % P  # Create the private key using public server part and private value.
+    return private_key
+    
 
 def send_message(message: str):
     """Sends a provided message to the server
@@ -66,8 +62,11 @@ def send_message_encrypt(message: str):
         message (str): The JSON data formatted as a string
     """
 
-    mf.encrypt_send(message, client, key)
-    print(mf.receive_decrypt(client, key))
+    mf.send_encrypted(message, client, key)
+    try:
+        print(mf.decrypt_receive(client, key))
+    except(ValueError):
+        print('Incorrect Password, try again!')
 
 
 def collect_client_input():
@@ -181,4 +180,4 @@ if __name__ == "__main__":
 
     # If the client was able to establish a connection send the disconnect message to the server
     if connected:
-        mf.encrypt_send(DISCONNECT, client, key)
+        mf.send_encrypted(DISCONNECT, client, key)
